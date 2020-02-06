@@ -34,14 +34,17 @@ node.cores = 4
 node.ram = 56000
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD"
 
-#iface = node.addInterface("if1")
-#iface.component_id = "eth1"
+iface = node.addInterface("if1")
+iface.component_id = "eth1"
 #iface.addAddress(pg.IPv4Address(prefixForIP + "1", "255.255.255.0"))
-#node.routable_control_ip = "true" 
-#link.addInterface(iface)  
+node.routable_control_ip = "true" 
+link.addInterface(iface)  
 
 # Set scripts in the repository executable and readable.
 node.addService(pg.Execute(shell="sh", command="sudo find /local/repository/ -type f -iname \"*.sh\" -exec chmod 755 {} \;"))
+
+# Run setup script(s)
+node.addService(pg.Execute(shell="sh", command="sudo /local/repository/singularity/singularitySetup.sh"))
   
 # Print the RSpec to the enclosing page.
 pc.printRequestRSpec(request)
