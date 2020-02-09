@@ -7,7 +7,9 @@ import geni.rspec.igext as IG
 # Create a portal context.
 pc = portal.Context()
 
-#params = pc.bindParameters()
+pc.defineParameter( "corecount", "Number of cores in each node (2 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 4 )
+pc.defineParameter( "ramsize", "MB of RAM in each node (2048 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 56000 )
+params = pc.bindParameters()
 
 # Create a Request object to start building the RSpec.
 request = pc.makeRequestRSpec()
@@ -30,8 +32,8 @@ prefixForIP = "192.168.1."
 
 node = request.XenVM("glaunet1")
 
-node.cores = 4
-node.ram = 56000
+node.cores = params.corecount
+node.ram = params.ramsize
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD"
 
 #iface = node.addInterface("if1")
