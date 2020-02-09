@@ -16,9 +16,10 @@ import tensorflow as tf
 # UNet:
 # https://github.com/zhixuhao/unet
 
-
-num_fl = 130
-num_fl_val = 32
+num_fl = 9
+num_fl_val = 9
+#num_fl = 130
+#num_fl_val = 32
 in_path_unseg = '/worksite/inprime/'
 in_path_unseg_val = '/worksite/inprimeval/'
 in_path_seg = '/worksite/inseg/'
