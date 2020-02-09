@@ -25,6 +25,7 @@ sudo cp -r /local/repository/inprimeval /worksite/
 sudo cp -r /local/repository/inseg /worksite/
 sudo cp -r /local/repository/insegval /worksite/
 
+sudo chmod 777 /worksite
 sudo chmod 777 /worksite/inprime
 sudo chmod 777 /worksite/inprimeval
 sudo chmod 777 /worksite/inseg
