@@ -11,5 +11,21 @@ sudo apt-get -y install python-pip
 sudo pip install tensorflow
 sudo pip install pillow
 
-sudo mkdir /worksite || true
-sudo mkdir /outgoing || true
+# Make directories
+sudo mkdir /worksite
+sudo mkdir /worksite/inprime/
+sudo mkdir /worksite/inprimeval/
+sudo mkdir /worksite/inseg/
+sudo mkdir /worksite/insegval/
+sudo mkdir /outgoing/
+
+# Copy files
+sudo cp /worksite/inprime /inprime
+sudo cp /worksite/inprimeval /inprimeval
+sudo cp /worksite/inseg /inseg
+sudo cp /worksite/insegval /insegval
+
+sudo chmod 755 /worksite/inprime/*
+sudo chmod 755 /worksite/inprimeval/*
+sudo chmod 755 /worksite/inseg/*
+sudo chmod 755 /worksite/insegval/*
