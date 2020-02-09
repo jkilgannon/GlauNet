@@ -56,19 +56,21 @@ def batchmaker_train():
             y_set = []
             for flname in x_files:
                 if not os.path.isdir(os.path.join(in_path_unseg, flname)):
-                    x_set.append(img_to_array(tf.image.resize(load_img(in_path_unseg + flname), [320,480])[0]))
-                    #x_set.append(img_to_array(load_img(in_path_unseg + flname)))
+                    #x_set.append(img_to_array(tf.image.resize(load_img(in_path_unseg + flname), [320,480])[0]))
+                    x_set.append(img_to_array(load_img(in_path_unseg + flname)))
             for flname in y_files:
                 if not os.path.isdir(os.path.join(in_path_seg, flname)):
-                    y_set.append(img_to_array(tf.image.resize(load_img(in_path_seg + flname), [320,480])[0]))
-                    #y_set.append(img_to_array(load_img(in_path_seg + flname)))
+                    #y_set.append(img_to_array(tf.image.resize(load_img(in_path_seg + flname), [320,480])[0]))
+                    y_set.append(img_to_array(load_img(in_path_seg + flname)))
                     #y_set.append(load_img(in_path_seg + flname))
             
             batch_head = batch_end
             batch_end = batch_head + batchsize 
             
-            x_set = np.array(x_set)
-            y_set = np.array(y_set)
+            x_set = tf.image.resize(np.array(x_set), [320,480])
+            y_set = tf.image.resize(np.array(y_set), [320,480])
+            #x_set = np.array(x_set)
+            #y_set = np.array(y_set)
             
             yield (x_set, y_set)
 
@@ -98,18 +100,20 @@ def batchmaker_test():
             y_set = []
             for flname in x_files:
                 if not os.path.isdir(os.path.join(in_path_unseg_val, flname)):
-                    x_set.append(tf.image.resize(load_img(in_path_unseg_val + flname), [320,480])[0])
-                    #x_set.append(load_img(in_path_unseg_val + flname))
+                    #x_set.append(tf.image.resize(load_img(in_path_unseg_val + flname), [320,480])[0])
+                    x_set.append(load_img(in_path_unseg_val + flname))
             for flname in y_files:
                 if not os.path.isdir(os.path.join(in_path_seg_val, flname)):
-                    y_set.append(tf.image.resize(load_img(in_path_seg_val + flname), [320,480])[0])
-                    #y_set.append(load_img(in_path_seg_val + flname))
+                    #y_set.append(tf.image.resize(load_img(in_path_seg_val + flname), [320,480])[0])
+                    y_set.append(load_img(in_path_seg_val + flname))
             
             batch_head = batch_end
             batch_end = batch_head + batchsize 
             
-            x_set = np.array(x_set)
-            y_set = np.array(y_set)
+            #x_set = np.array(x_set)
+            #y_set = np.array(y_set)
+            x_set = tf.image.resize(np.array(x_set), [320,480])
+            y_set = tf.image.resize(np.array(y_set), [320,480])
             
             yield (x_set, y_set)
 
