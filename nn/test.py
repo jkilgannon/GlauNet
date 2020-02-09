@@ -67,8 +67,8 @@ def batchmaker_train():
             batch_head = batch_end
             batch_end = batch_head + batchsize 
             
-            x_set = tf.image.resize(np.array(x_set), [320,480])
-            y_set = tf.image.resize(np.array(y_set), [320,480])
+            x_set = np.array(tf.image.resize(np.array(x_set), [320,480]))
+            y_set = np.array(tf.image.resize(np.array(y_set), [320,480]))
             #x_set = np.array(x_set)
             #y_set = np.array(y_set)
             
@@ -112,8 +112,8 @@ def batchmaker_test():
             
             #x_set = np.array(x_set)
             #y_set = np.array(y_set)
-            x_set = tf.image.resize(np.array(x_set), [320,480])
-            y_set = tf.image.resize(np.array(y_set), [320,480])
+            x_set = np.array(tf.image.resize(np.array(x_set), [320,480]))
+            y_set = np.array(tf.image.resize(np.array(y_set), [320,480]))
             
             yield (x_set, y_set)
 
