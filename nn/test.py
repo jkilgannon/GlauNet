@@ -11,6 +11,7 @@ from tensorflow.keras.optimizers import *
 from tensorflow.keras import backend as keras
 import os
 import numpy as np
+import tensorflow as tf
 
 # UNet:
 # https://github.com/zhixuhao/unet
@@ -25,7 +26,8 @@ in_path_seg_val = '/worksite/insegval/'
 out_path = '/outgoing/'
 #batchsize = 3
 batchsize = 1
-input_size = (960, 1440, 3)
+#input_size = (960, 1440, 3)
+input_size = (320, 480, 3)
 
 
 # A Python generator that will give the fit_generator training data in batches.
@@ -54,10 +56,12 @@ def batchmaker_train():
             y_set = []
             for flname in x_files:
                 if not os.path.isdir(os.path.join(in_path_unseg, flname)):
-                    x_set.append(img_to_array(load_img(in_path_unseg + flname)))
+                    x_set.append(img_to_array(tf.image.resize(load_img(in_path_unseg + flname)), [320,480]))
+                    #x_set.append(img_to_array(load_img(in_path_unseg + flname)))
             for flname in y_files:
                 if not os.path.isdir(os.path.join(in_path_seg, flname)):
-                    y_set.append(img_to_array(load_img(in_path_seg + flname)))
+                    y_set.append(img_to_array(tf.image.resize(load_img(in_path_seg + flname)), [320,480]))
+                    #y_set.append(img_to_array(load_img(in_path_seg + flname)))
                     #y_set.append(load_img(in_path_seg + flname))
             
             batch_head = batch_end
@@ -94,10 +98,12 @@ def batchmaker_test():
             y_set = []
             for flname in x_files:
                 if not os.path.isdir(os.path.join(in_path_unseg_val, flname)):
-                    x_set.append(load_img(in_path_unseg_val + flname))
+                    x_set.append(tf.image.resize(load_img(in_path_unseg_val + flname), [320,480]))
+                    #x_set.append(load_img(in_path_unseg_val + flname))
             for flname in y_files:
                 if not os.path.isdir(os.path.join(in_path_seg_val, flname)):
-                    y_set.append(load_img(in_path_seg_val + flname))
+                    y_set.append(tf.image.resize(load_img(in_path_seg_val + flname), [320,480]))
+                    #y_set.append(load_img(in_path_seg_val + flname))
             
             batch_head = batch_end
             batch_end = batch_head + batchsize 
