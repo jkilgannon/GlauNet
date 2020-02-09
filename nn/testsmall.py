@@ -134,7 +134,7 @@ conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer
 conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
 pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
 
-#conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
+conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
 conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
 drop4 = Dropout(0.5)(conv4)
 pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
