@@ -20,12 +20,18 @@ sudo mkdir /worksite/insegval/
 sudo mkdir /outgoing/
 
 # Copy files
-sudo cp /worksite/inprime /inprime
-sudo cp /worksite/inprimeval /inprimeval
-sudo cp /worksite/inseg /inseg
-sudo cp /worksite/insegval /insegval
+sudo cp -r /local/repository/inprime /worksite/
+sudo cp -r /local/repository/inprimeval /worksite/
+sudo cp -r /local/repository/inseg /worksite/
+sudo cp -r /local/repository/insegval /worksite/
 
-sudo chmod 755 /worksite/inprime/*
-sudo chmod 755 /worksite/inprimeval/*
-sudo chmod 755 /worksite/inseg/*
-sudo chmod 755 /worksite/insegval/*
+sudo chmod 777 /worksite/inprime
+sudo chmod 777 /worksite/inprimeval
+sudo chmod 777 /worksite/inseg
+sudo chmod 777 /worksite/insegval
+sudo chmod 777 /outgoing
+
+sudo chmod 777 /worksite/inprime/*.bmp
+sudo chmod 777 /worksite/inprimeval/*.bmp
+sudo chmod 777 /worksite/inseg/*.bmp
+sudo chmod 777 /worksite/insegval/*.bmp
