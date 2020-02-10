@@ -76,9 +76,9 @@ conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
 
 model = Model(inputs = input_layer, outputs = conv10)
 
-#model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
+#model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
 
 print("++++++++++++++")
 print(model.count_params())
@@ -92,17 +92,18 @@ print("++++++++++++++")
 
 
 EARLYSTOP = EarlyStopping(patience=50, 
-                          monitor='cosine_similarity', 
+                          monitor='binary_crossentropy', 
                           restore_best_weights=True)
 
 # Save off the very best model we can find; avoids overfitting.
 CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
-                     monitor='cosine_similarity', 
+                     monitor='binary_crossentropy', 
                      mode='max', 
                      verbose=1, 
                      save_best_only=True)
 
 # https://stackoverflow.com/questions/45510403/keras-for-semantic-segmentation-flow-from-directory-error
+# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
 image_datagen = ImageDataGenerator(featurewise_center = True)
 mask_datagen = ImageDataGenerator()
 val_image_datagen = ImageDataGenerator(featurewise_center = True)
