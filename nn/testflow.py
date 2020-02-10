@@ -27,96 +27,6 @@ batchsize = 1
 #input_size = (960, 1440, 3)
 input_size = (320, 480, 3)
 
-
-# A Python generator that will give the fit_generator training data in batches.
-# Details at: https://wiki.python.org/moin/Generators
-def batchmaker_train():
-
-    x_files = sorted(os.listdir(in_path_unseg))
-    y_files = sorted(os.listdir(in_path_seg))
-    
-    if batchsize > num_fl:
-        print("Oh...COME ON!  batchsize too large.")
-        # And then crash.  But this won't happen.  Right?
-    
-    # The infinite loop is part of how generators work.  The fit_generator needs to
-    # always have data available, so we loop forever.
-    while True:
-        # (Re)start at the head of the files.
-        batch_head = 0                              # Start of current batch in the files
-        batch_end = batch_head + batchsize          # End of the batch
-        
-        while batch_end < num_fl:
-            x_flname = x_files[batch_head:batch_end]
-            y_flname = y_files[batch_head:batch_end]
-
-            x_set = []
-            y_set = []
-            for flname in x_files:
-                if not os.path.isdir(os.path.join(in_path_unseg, flname)):
-                    #x_set.append(img_to_array(tf.image.resize(load_img(in_path_unseg + flname), [320,480])[0]))
-                    x_set.append(img_to_array(load_img(in_path_unseg + flname)))
-            for flname in y_files:
-                if not os.path.isdir(os.path.join(in_path_seg, flname)):
-                    #y_set.append(img_to_array(tf.image.resize(load_img(in_path_seg + flname), [320,480])[0]))
-                    y_set.append(img_to_array(load_img(in_path_seg + flname)))
-                    #y_set.append(load_img(in_path_seg + flname))
-            
-            batch_head = batch_end
-            batch_end = batch_head + batchsize 
-            
-            x_set = np.array(tf.image.resize(np.array(x_set), [320,480]))
-            y_set = np.array(tf.image.resize(np.array(y_set), [320,480]))
-            #x_set = np.array(x_set)
-            #y_set = np.array(y_set)
-            
-            yield (x_set, y_set)
-
-# A Python generator that will give the fit_generator test data in batches.
-# Details at: https://wiki.python.org/moin/Generators
-def batchmaker_test():
-
-    x_files = sorted(os.listdir(in_path_unseg_val))
-    y_files = sorted(os.listdir(in_path_seg_val))
-    
-    if batchsize > num_fl_val:
-        print("Oh...COME ON!  batchsize too large.")
-        # And then crash.  But this won't happen.  Right?
-    
-    # The infinite loop is part of how generators work.  The fit_generator needs to
-    # always have data available, so we loop forever.
-    while True:
-        # (Re)start at the head of the files.
-        batch_head = 0                              # Start of current batch in the files
-        batch_end = batch_head + batchsize          # End of the batch
-        
-        while batch_end < num_fl_val:
-            x_flname = x_files[batch_head:batch_end]
-            y_flname = y_files[batch_head:batch_end]
-
-            x_set = []
-            y_set = []
-            for flname in x_files:
-                if not os.path.isdir(os.path.join(in_path_unseg_val, flname)):
-                    #x_set.append(tf.image.resize(load_img(in_path_unseg_val + flname), [320,480])[0])
-                    x_set.append(load_img(in_path_unseg_val + flname))
-            for flname in y_files:
-                if not os.path.isdir(os.path.join(in_path_seg_val, flname)):
-                    #y_set.append(tf.image.resize(load_img(in_path_seg_val + flname), [320,480])[0])
-                    y_set.append(load_img(in_path_seg_val + flname))
-            
-            batch_head = batch_end
-            batch_end = batch_head + batchsize 
-            
-            #x_set = np.array(x_set)
-            #y_set = np.array(y_set)
-            x_set = np.array(tf.image.resize(np.array(x_set), [320,480]))
-            y_set = np.array(tf.image.resize(np.array(y_set), [320,480]))
-            
-            yield (x_set, y_set)
-
-#def unet(pretrained_weights = None,input_size = (256,256,1)):
-
 input_layer = Input(input_size)
 
 conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(input_layer)
@@ -180,37 +90,9 @@ os.system('vmstat -s')
 print("++++++++++++++")
 
 
-"""
-model.compile(loss='sparse_categorical_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
-"""
-
-"""
-EARLYSTOP = EarlyStopping(patience=50, 
-                          monitor='val_categorical_accuracy', 
-                          restore_best_weights=True)
-EARLYSTOP = EarlyStopping(patience=50, 
-                          monitor='binary_crossentropy', 
-                          restore_best_weights=True)
-"""
-
 EARLYSTOP = EarlyStopping(patience=50, 
                           monitor='cosine_similarity', 
                           restore_best_weights=True)
-
-"""
-CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
-                     monitor='val_categorical_accuracy', 
-                     mode='max', 
-                     verbose=1, 
-                     save_best_only=True)
-CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
-                     monitor='binary_crossentropy', 
-                     mode='max', 
-                     verbose=1, 
-                     save_best_only=True)
-"""
 
 # Save off the very best model we can find; avoids overfitting.
 CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
@@ -218,16 +100,6 @@ CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5',
                      mode='max', 
                      verbose=1, 
                      save_best_only=True)
-
-"""
-history = model.fit_generator(batchmaker_train(),
-                    steps_per_epoch=num_fl // batchsize,
-                    shuffle=True, 
-                    epochs=500,
-                    validation_data=batchmaker_test(),
-                    validation_steps=num_fl_val // batchsize,
-                    callbacks=[EARLYSTOP, CHKPT])
-"""
 
 # https://stackoverflow.com/questions/45510403/keras-for-semantic-segmentation-flow-from-directory-error
 image_datagen = ImageDataGenerator(featurewise_center = True)
