@@ -24,12 +24,6 @@ sudo mkdir /worksite/inseg/all_data/
 sudo mkdir /worksite/insegval/all_data/
 sudo mkdir /outgoing/
 
-# Copy files
-sudo cp -r /local/repository/inprime/all_data /worksite/inprime
-sudo cp -r /local/repository/inprimeval/all_data /worksite/inprimeval/
-sudo cp -r /local/repository/inseg/all_data /worksite/inseg/
-sudo cp -r /local/repository/insegval/all_data /worksite/insegval/
-
 sudo chmod 777 /worksite
 sudo chmod 777 /worksite/inprime
 sudo chmod 777 /worksite/inprimeval
@@ -41,7 +35,13 @@ sudo chmod 777 /worksite/inseg/all_data/
 sudo chmod 777 /worksite/insegval/all_data/
 sudo chmod 777 /outgoing
 
-sudo chmod 777 /worksite/inprime/all_data/*.tif
-sudo chmod 777 /worksite/inprimeval/all_data/*.tif
-sudo chmod 777 /worksite/inseg/all_data/*.tif
-sudo chmod 777 /worksite/insegval/all_data/*.bmp
+# Copy files
+sudo cp /local/repository/inprime/* /worksite/inprime/all_data/
+sudo cp /local/repository/inprimeval/* /worksite/inprimeval/all_data/
+sudo cp /local/repository/inseg/* /worksite/inseg/all_data/
+sudo cp /local/repository/insegval/* /worksite/insegval/all_data/
+
+sudo chmod 777 /worksite/inprime/all_data/*
+sudo chmod 777 /worksite/inprimeval/all_data/*
+sudo chmod 777 /worksite/inseg/all_data/*
+sudo chmod 777 /worksite/insegval/all_data/*
