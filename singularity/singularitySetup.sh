@@ -10,6 +10,7 @@ sudo apt-get -y install python-pip
 # Install TensorFlow via pip
 sudo pip install tensorflow
 sudo pip install pillow
+sudo pip install SciPy
 
 # Make directories
 sudo mkdir /worksite
