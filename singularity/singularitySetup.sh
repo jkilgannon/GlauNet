@@ -18,22 +18,30 @@ sudo mkdir /worksite/inprime/
 sudo mkdir /worksite/inprimeval/
 sudo mkdir /worksite/inseg/
 sudo mkdir /worksite/insegval/
+sudo mkdir /worksite/inprime/all_data/
+sudo mkdir /worksite/inprimeval/all_data/
+sudo mkdir /worksite/inseg/all_data/
+sudo mkdir /worksite/insegval/all_data/
 sudo mkdir /outgoing/
 
 # Copy files
-sudo cp -r /local/repository/inprime /worksite/
-sudo cp -r /local/repository/inprimeval /worksite/
-sudo cp -r /local/repository/inseg /worksite/
-sudo cp -r /local/repository/insegval /worksite/
+sudo cp -r /local/repository/inprime/all_data /worksite/inprime
+sudo cp -r /local/repository/inprimeval/all_data /worksite/inprimeval/
+sudo cp -r /local/repository/inseg/all_data /worksite/inseg/
+sudo cp -r /local/repository/insegval/all_data /worksite/insegval/
 
 sudo chmod 777 /worksite
 sudo chmod 777 /worksite/inprime
 sudo chmod 777 /worksite/inprimeval
 sudo chmod 777 /worksite/inseg
 sudo chmod 777 /worksite/insegval
+sudo chmod 777 /worksite/inprime/all_data/
+sudo chmod 777 /worksite/inprimeval/all_data/
+sudo chmod 777 /worksite/inseg/all_data/
+sudo chmod 777 /worksite/insegval/all_data/
 sudo chmod 777 /outgoing
 
-sudo chmod 777 /worksite/inprime/*.bmp
-sudo chmod 777 /worksite/inprimeval/*.bmp
-sudo chmod 777 /worksite/inseg/*.bmp
-sudo chmod 777 /worksite/insegval/*.bmp
+sudo chmod 777 /worksite/inprime/all_data/*.tif
+sudo chmod 777 /worksite/inprimeval/all_data/*.tif
+sudo chmod 777 /worksite/inseg/all_data/*.bmp
+sudo chmod 777 /worksite/insegval/all_data/*.bmp
