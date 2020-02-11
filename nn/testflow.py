@@ -112,14 +112,14 @@ val_mask_datagen = ImageDataGenerator()
 ## Training data
 image_generator = image_datagen.flow_from_directory(
     in_path_unseg,
-    target_size=input_size,
+    target_size=(320, 480),
     class_mode = None,
     batch_size = 1,
     seed = 123)
 
 mask_generator = mask_datagen.flow_from_directory(
     in_path_seg,
-    target_size=input_size,
+    target_size=(320, 480),
     class_mode = None,
     batch_size = 1,
     seed = 123)
@@ -130,14 +130,14 @@ train_generator = zip(image_generator, mask_generator)
 ## Validation data
 val_image_generator = val_image_datagen.flow_from_directory(
     in_path_unseg,
-    target_size=input_size,
+    target_size=(320, 480),
     class_mode = None,
     batch_size = 1,
     seed = 123)
 
 val_mask_generator = val_mask_datagen.flow_from_directory(
     in_path_seg,
-    target_size=input_size,
+    target_size=(320, 480),
     class_mode = None,
     batch_size = 1,
     seed = 123)
