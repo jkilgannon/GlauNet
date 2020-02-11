@@ -5,12 +5,12 @@ set -x
 # Install software into the container
 sudo apt-get -y update
 sudo apt-get -y install wget python3 nano unzip
-sudo apt-get -y install python-pip
+sudo apt-get -y install python-pip3
 
 # Install TensorFlow via pip
-sudo pip install tensorflow
-sudo pip install pillow
-sudo pip install SciPy
+sudo pip3 install tensorflow
+sudo pip3 install pillow
+sudo pip3 install SciPy
 
 # Make directories
 sudo mkdir /worksite
@@ -43,5 +43,5 @@ sudo chmod 777 /outgoing
 
 sudo chmod 777 /worksite/inprime/all_data/*.tif
 sudo chmod 777 /worksite/inprimeval/all_data/*.tif
-sudo chmod 777 /worksite/inseg/all_data/*.bmp
+sudo chmod 777 /worksite/inseg/all_data/*.tif
 sudo chmod 777 /worksite/insegval/all_data/*.bmp
