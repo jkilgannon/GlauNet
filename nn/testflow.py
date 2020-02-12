@@ -11,6 +11,13 @@ import os
 import numpy as np
 import tensorflow as tf
 
+
+#https://github.com/keras-team/keras/issues/5720
+def combine_generator(gen1, gen2):
+    while True:
+        yield(gen1.next(), gen2.next())
+
+        
 # UNet:
 # https://github.com/zhixuhao/unet
 
@@ -125,7 +132,8 @@ mask_generator = mask_datagen.flow_from_directory(
     seed = 123)
 
 # combine generators into one which yields image and masks
-train_generator = zip(image_generator, mask_generator)
+#train_generator = zip(image_generator, mask_generator)
+train_generator = combineGenerator(image_generator, mask_generator)
 
 ## Validation data
 val_image_generator = val_image_datagen.flow_from_directory(
@@ -143,7 +151,8 @@ val_mask_generator = val_mask_datagen.flow_from_directory(
     seed = 123)
 
 # combine generators into one which yields image and masks
-val_train_generator = zip(val_image_generator, val_mask_generator)
+#val_train_generator = zip(val_image_generator, val_mask_generator)
+val_train_generator = combineGenerator(val_image_generator, val_mask_generator)
 
 #model.fit_generator(
 #    train_generator,
