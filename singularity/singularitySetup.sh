@@ -40,8 +40,10 @@ sudo cp /local/repository/inprime/* /worksite/inprime/all_data/
 sudo cp /local/repository/inprimeval/* /worksite/inprimeval/all_data/
 sudo cp /local/repository/inseg/* /worksite/inseg/all_data/
 sudo cp /local/repository/insegval/* /worksite/insegval/all_data/
+sudo cp /local/repository/nn/* /users/jk880380/
 
 sudo chmod 777 /worksite/inprime/all_data/*
 sudo chmod 777 /worksite/inprimeval/all_data/*
 sudo chmod 777 /worksite/inseg/all_data/*
 sudo chmod 777 /worksite/insegval/all_data/*
+sudo chmod 777 /users/jk880380/*
