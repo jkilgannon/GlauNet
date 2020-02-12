@@ -86,7 +86,7 @@ conv10 = Conv2D(3, 1, activation = 'sigmoid')(conv9)
 model = Model(inputs = input_layer, outputs = conv10)
 
 loss_type = 'binary_crossentropy'
-monitor_type = 'binary_crossentropy'
+monitor_type = 'loss'
 
 model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
 
