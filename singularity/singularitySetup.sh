@@ -5,7 +5,7 @@ set -x
 # Install software into the container
 sudo apt-get -y update
 sudo apt-get -y install wget python3 nano unzip
-sudo apt-get -y install python-pip3
+sudo apt-get -y install python3-pip
 
 # Install TensorFlow via pip
 sudo pip3 install tensorflow
