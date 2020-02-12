@@ -85,7 +85,10 @@ conv10 = Conv2D(3, 1, activation = 'sigmoid')(conv9)
 
 model = Model(inputs = input_layer, outputs = conv10)
 
-model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+loss_type = 'binary_crossentropy'
+monitor_type = 'binary_crossentropy'
+
+model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
 
 #model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
 
@@ -101,12 +104,12 @@ print("++++++++++++++")
 
 
 EARLYSTOP = EarlyStopping(patience=50, 
-                          monitor='binary_crossentropy', 
+                          monitor=monitor_type, 
                           restore_best_weights=True)
 
 # Save off the very best model we can find; avoids overfitting.
 CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
-                     monitor='binary_crossentropy', 
+                     monitor=monitor_type, 
                      mode='max', 
                      verbose=1, 
                      save_best_only=True)
@@ -173,6 +176,7 @@ history = model.fit_generator(train_generator,
                     shuffle=True, 
                     epochs=500,
                     validation_data=val_train_generator,
-                    validation_steps=num_fl_val // batchsize)
+                    validation_steps=num_fl_val // batchsize,
+                    callbacks=[EARLYSTOP, CHKPT])
 
 model.save_weights(out_path + 'last_weights.h5') 
