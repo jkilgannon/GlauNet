@@ -26,8 +26,8 @@ def dice_coeff(y_true, y_pred):
     return 1 - (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
 
 # https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
-def iou_coef(y_true, y_pred, smooth=1):
-  intersection = keras.sum(K.abs(y_true * y_pred), axis=[1,2,3])
+def iou_coeff(y_true, y_pred, smooth=1):
+  intersection = keras.sum(keras.abs(y_true * y_pred), axis=[1,2,3])
   union = keras.sum(y_true,[1,2,3])+keras.sum(y_pred,[1,2,3])-intersection
   iou = keras.mean((intersection + smooth) / (union + smooth), axis=0)
   return iou
@@ -103,7 +103,7 @@ model = Model(inputs = input_layer, outputs = conv10)
 monitor_type = 'loss'
 
 #model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
-model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coef(), metrics = ['accuracy'])
+model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coeff, metrics = ['accuracy'])
 
 #model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
 
