@@ -17,6 +17,20 @@ def combine_generator(gen1, gen2):
     while True:
         yield(gen1.next(), gen2.next())
 
+# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
+def dice_coeff(y_true, y_pred):
+    smooth = 1.
+    y_true_f = keras.flatten(y_true)
+    y_pred_f = keras.flatten(y_pred)
+    intersection = keras.sum(y_true_f * y_pred_f)
+    return 1 - (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
+
+# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
+def iou_coef(y_true, y_pred, smooth=1):
+  intersection = keras.sum(K.abs(y_true * y_pred), axis=[1,2,3])
+  union = keras.sum(y_true,[1,2,3])+keras.sum(y_pred,[1,2,3])-intersection
+  iou = keras.mean((intersection + smooth) / (union + smooth), axis=0)
+  return iou
         
 # UNet:
 # https://github.com/zhixuhao/unet
@@ -85,10 +99,11 @@ conv10 = Conv2D(3, 1, activation = 'sigmoid')(conv9)
 
 model = Model(inputs = input_layer, outputs = conv10)
 
-loss_type = 'binary_crossentropy'
+#loss_type = 'binary_crossentropy'
 monitor_type = 'loss'
 
-model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
+#model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
+model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coef(), metrics = ['accuracy'])
 
 #model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
 
@@ -110,7 +125,7 @@ EARLYSTOP = EarlyStopping(patience=50,
 # Save off the very best model we can find; avoids overfitting.
 CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
                      monitor=monitor_type, 
-                     mode='max', 
+                     mode='min', 
                      verbose=1, 
                      save_best_only=True)
 
