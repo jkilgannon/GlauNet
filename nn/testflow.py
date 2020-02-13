@@ -131,9 +131,11 @@ CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5',
 
 # https://stackoverflow.com/questions/45510403/keras-for-semantic-segmentation-flow-from-directory-error
 # https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
-image_datagen = ImageDataGenerator(featurewise_center = True)
+image_datagen = ImageDataGenerator()
+#image_datagen = ImageDataGenerator(featurewise_center = True)
 mask_datagen = ImageDataGenerator()
-val_image_datagen = ImageDataGenerator(featurewise_center = True)
+val_image_datagen = ImageDataGenerator()
+#val_image_datagen = ImageDataGenerator(featurewise_center = True)
 val_mask_datagen = ImageDataGenerator()
 
 ## Training data
