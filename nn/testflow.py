@@ -35,10 +35,11 @@ def iou_coeff(y_true, y_pred, smooth=1):
 # UNet:
 # https://github.com/zhixuhao/unet
 
-num_fl = 9
-num_fl_val = 9
-#num_fl = 130
-#num_fl_val = 32
+#num_fl = 9
+#num_fl_val = 9
+num_fl = 130
+num_fl_val = 32
+
 in_path_unseg = '/worksite/inprime'
 in_path_unseg_val = '/worksite/inprimeval'
 in_path_seg = '/worksite/inseg'
