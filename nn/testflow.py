@@ -196,4 +196,5 @@ history = model.fit_generator(train_generator,
                     validation_steps=num_fl_val // batchsize,
                     callbacks=[EARLYSTOP, CHKPT])
 
-model.save_weights(out_path + 'last_weights.h5') 
+#model.save_weights(out_path + 'last_weights.h5') 
+model.save(out_path + 'last_weights.h5') 
