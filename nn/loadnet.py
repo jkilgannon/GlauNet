@@ -88,7 +88,9 @@ val_mask_generator = val_mask_datagen.flow_from_directory(
 # Load the model from file
 prevmodelfile = 'last_weights.h5'
 print(' Loading model: ' + prevmodelfile)
-model = load_model(prevmodelfile)
+# Fix for "Unknown loss function" error: (custom objects) https://github.com/keras-team/keras/issues/5916
+model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
+#model = load_model(prevmodelfile)
 print("++++++++++++++")
 print(model.count_params())
 print("++++++++++++++")
