@@ -14,7 +14,7 @@ import tensorflow as tf
 #https://github.com/keras-team/keras/issues/5720
 def combine_generator(gen1, gen2):
 	while True:
-    	yield(gen1.next(), gen2.next())
+    		yield(gen1.next(), gen2.next())
 # https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
 def dice_coeff(y_true, y_pred):
 	smooth = 1.
