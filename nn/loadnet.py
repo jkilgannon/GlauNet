@@ -1,4 +1,5 @@
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.preprocessing import image
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -10,6 +11,8 @@ from tensorflow.keras import backend as keras
 import os
 import numpy as np
 import tensorflow as tf
+from PIL import Image
+import matplotlib.pyplot as plt
 
 #https://github.com/keras-team/keras/issues/5720
 def combine_generator(gen1, gen2):
@@ -86,11 +89,11 @@ val_mask_generator = val_mask_datagen.flow_from_directory(
 	seed = 123)
 
 # Load the model from file
-prevmodelfile = 'last_weights.h5'
+prevmodelfile = 'best_model_incremental.h5'
+#prevmodelfile = 'last_weights.h5'
 print(' Loading model: ' + prevmodelfile)
-# Fix for "Unknown loss function" error: (custom objects) https://github.com/keras-team/keras/issues/5916
-model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
 #model = load_model(prevmodelfile)
+model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
 print("++++++++++++++")
 print(model.count_params())
 print("++++++++++++++")
@@ -100,3 +103,33 @@ os.system('free -m')
 print("++++++++++++++")
 os.system('vmstat -s')
 print("++++++++++++++")
+
+img = 'test.tif'
+test_fundus = load_img(img, target_size=input_size)
+
+# https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
+x = image.img_to_array(test_fundus)
+x = np.expand_dims(x, axis=0)
+images = np.vstack([x])
+# end of stackoverflow
+
+#test_fundus = Image.open(img)
+predicted = model.predict(images)
+
+print("shape: " + str(predicted.shape))
+print("type: "  + str(type(predicted)))
+
+# https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
+print("AAA")
+plt.imshow(x[0])
+plt.savefig("array")
+print("BBB")
+
+segmented_image = Image.fromarray(predicted)
+print("A")
+segmented_image.save('predicted.png')
+print("B")
+
+
+print("Done")
+
