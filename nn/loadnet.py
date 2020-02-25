@@ -116,8 +116,22 @@ images = np.vstack([x])
 #test_fundus = Image.open(img)
 predicted = model.predict(images)
 
-print("shape: " + str(predicted.shape))
-print("type: "  + str(type(predicted)))
+print("predicted shape: " + str(predicted.shape))
+print("predicted type: "  + str(type(predicted)))
+
+#np.ndarray.tofile('predicted.csv', sep=',', predicted)
+predicted.tofile('predicted.csv', sep=',')
+print("Saved")
+
+##predicted_data = ''
+#for row in range(320):
+#    for col in range(480):
+#        print(predicted[0,row,col])
+#        #predicted_data = predicted_data + predicted[0, row,col] + ","
+##print(predicted_data)
+#
+#np.savetxt('predicted.csv', predicted)
+##predicted.save('predicted.npy')
 
 # https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
 print("AAA")
@@ -132,4 +146,3 @@ print("B")
 
 
 print("Done")
-
