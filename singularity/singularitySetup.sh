@@ -11,6 +11,7 @@ sudo apt-get -y install python3-pip
 sudo pip3 install tensorflow
 sudo pip3 install pillow
 sudo pip3 install SciPy
+sudo pip3 install matplotlib
 
 # Make directories
 sudo mkdir /worksite
