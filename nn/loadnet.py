@@ -133,16 +133,16 @@ print("Saved")
 #np.savetxt('predicted.csv', predicted)
 ##predicted.save('predicted.npy')
 
-# https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
-print("AAA")
-plt.imshow(x[0])
-plt.savefig("array")
-print("BBB")
-
-segmented_image = Image.fromarray(predicted)
-print("A")
-segmented_image.save('predicted.png')
-print("B")
+## https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
+#print("AAA")
+#plt.imshow(x[0])
+#plt.savefig("array")
+#print("BBB")
+#
+#segmented_image = Image.fromarray(predicted)
+#print("A")
+#segmented_image.save('predicted.png')
+#print("B")
 
 
 print("Done")
