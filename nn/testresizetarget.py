@@ -67,28 +67,28 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
 
             test_fundus = load_img(img, target_size=input_size)
 
-            print("image type: " + str(type(test_fundus)))
-            print("image shape: " + str(test_fundus.size))
-            vvvv = list(test_fundus.getdata())
-            print(vvvv[0])
-            print(vvvv[1])
-            print(vvvv[2])
-            print(vvvv[12000])
+            #print("image type: " + str(type(test_fundus)))
+            #print("image shape: " + str(test_fundus.size))
+            #vvvv = list(test_fundus.getdata())
+            #print(vvvv[0])
+            #print(vvvv[1])
+            #print(vvvv[2])
+            #print(vvvv[12000])
             ##print(str(test_fundus[0,0]) + " : " + str(test_fundus[0,1]))
 
             # https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
             x = image.img_to_array(test_fundus)
 
-            print("image array type: " + str(type(x)))
-            print("image array shape: " + str(x.shape))
-            print(str(x[0,0]) + " : " + str(x[0,1]))
+            #print("image array type: " + str(type(x)))
+            #print("image array shape: " + str(x.shape))
+            #print(str(x[0,0]) + " : " + str(x[0,1]))
 
             # Get the target data, which is a saved numpy ndarray
             y = np.load(target)
 
-            print("target type: " + str(type(y)))
-            print("target shape: " + str(y.shape))
-            print(str(y.shape[0]) + "," + str(y.shape[1]))
+            #print("target type: " + str(type(y)))
+            #print("target shape: " + str(y.shape))
+            #print(str(y.shape[0]) + "," + str(y.shape[1]))
             #ccc = ""
             #for xxx in range(y.shape[0]):
             #    for yyy in range(y.shape[1]):
@@ -98,9 +98,7 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
             #n = text_file.write(ccc)
             #text_file.close()
             #print("Done output")
-
-            print(str(y[0,0]) + " : " + str(y[0,1])  + " : " + str(y[0,2])  + " : " + str(y[0,3]))
-
+            #print(str(y[0,0]) + " : " + str(y[0,1])  + " : " + str(y[0,2])  + " : " + str(y[0,3]))
 
             batch_head = batch_end + 1
             batch_end = batch_head + batchsize 
@@ -116,20 +114,20 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
                     col = col_small*3
                     total_value = y[row,col] + y[row,col+1] + y[row,col+2] + y[row+1,col] + y[row+1,col+1] + y[row+1,col+2] + y[row+2,col] + y[row+2,col+1] + y[row+2,col+2]
                     #y_shrunk[row_small,col_small] = round(total_value / 9)
-                    y_shrunk[row_small,col_small,0] = round(total_value / 9)
-                    y_shrunk[row_small,col_small,1] = round(total_value / 9)
-                    y_shrunk[row_small,col_small,2] = round(total_value / 9)
+                    avg_val = round(total_value / 9)
+                    y_shrunk[row_small,col_small,0] = avg_val
+                    y_shrunk[row_small,col_small,1] = avg_val
+                    y_shrunk[row_small,col_small,2] = avg_val
 
-            print("shrunk array shape: " + str(y_shrunk.shape))
+            #print("shrunk array shape: " + str(y_shrunk.shape))
 
             y_set = np.array(y, dtype=np.uint8)
             #y_set = y_shrunk.reshape((-1, 320, 480))
             #y_set = y_shrunk.reshape((-1, 320, 480, 2))
             y_set = y_shrunk.reshape((-1, 320, 480, 3))
 
-            print("x_set array shape: " + str(x_set.shape))
-            print("y_set array shape: " + str(y_set.shape))
-
+            #print("x_set array shape: " + str(x_set.shape))
+            #print("y_set array shape: " + str(y_set.shape))
             #print(x_set.shape) print(y_set.shape) print(y_set) print("--") print(str(counter)) counter += 1
 
             yield (x_set, y_set)
