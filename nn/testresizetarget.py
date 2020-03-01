@@ -193,8 +193,8 @@ up9 = Conv2D(64, 2, activation = 'relu', padding = 'same', kernel_initializer = 
 merge9 = concatenate([conv1,up9], axis = 3)
 conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
 conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-#conv9 = Conv2D(3, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+#conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+conv9 = Conv2D(3, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 
 # Input shape: 4D tensor with shape: (samples, channels, rows, cols)
 # Output shape: 4D tensor with shape: (samples, filters, new_rows, new_cols) 
