@@ -67,11 +67,29 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
 
             test_fundus = load_img(img, target_size=input_size)
 
+            #print("image type: " + str(type(test_fundus)))
+            #print("image shape: " + str(test_fundus.size))
+            #vvvv = list(test_fundus.getdata())
+            #print(vvvv[0])
+            #print(vvvv[1])
+            #print(vvvv[2])
+            #print(vvvv[12000])
+            ###print(str(test_fundus[0,0]) + " : " + str(test_fundus[0,1]))
+
             # https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
             x = image.img_to_array(test_fundus)
 
+            #print("image array type: " + str(type(x)))
+            #print("image array shape: " + str(x.shape))
+            #print(str(x[0,0]) + " : " + str(x[0,1]))
+
             # Get the target data, which is a saved numpy ndarray
             y = np.load(target)
+
+            #print("target type: " + str(type(y)))
+            #print("target shape: " + str(y.shape))
+            #print(str(y[0,0]) + " : " + str(y[0,1])  + " : " + str(y[0,2])  + " : " + str(y[0,3]))
+
 
             batch_head = batch_end + 1
             batch_end = batch_head + batchsize 
