@@ -8,14 +8,17 @@ f = open(input_file, "r")
 contents = f.read()
 elements = contents.split(",")	
 valid_list = []
+elements_list = []
 count = 0
 for num in elements:
     count = count + 1
     h = hash(str(num))
     if not h in valid_list:
         valid_list.append(h)
+        elements_list.append(h)
 
 print(valid_list)
+print(elements_list)
 print(count)
 
 print("Done")
