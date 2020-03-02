@@ -15,7 +15,7 @@ for num in elements:
     h = hash(str(num))
     if not h in valid_list:
         valid_list.append(h)
-        elements_list.append(h)
+        elements_list.append(num)
 
 print(valid_list)
 print(elements_list)
