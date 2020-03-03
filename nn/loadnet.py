@@ -93,7 +93,8 @@ prevmodelfile = 'best_model_incremental.h5'
 #prevmodelfile = 'last_weights.h5'
 print(' Loading model: ' + prevmodelfile)
 #model = load_model(prevmodelfile)
-model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
+#model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
+model = load_model(prevmodelfile, custom_objects={'dice_coeff': dice_coeff})
 print("++++++++++++++")
 print(model.count_params())
 print("++++++++++++++")
