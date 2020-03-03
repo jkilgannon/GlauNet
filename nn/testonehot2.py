@@ -139,11 +139,14 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
                     # One-hot the categories
                     avg_val = round(total_value / 9)
                     if avg_val == 0:
-                        y_shrunk[row_small,col_small,0] = avg_val
+                        #y_shrunk[row_small,col_small,0] = avg_val
+                        y_shrunk[row_small,col_small,0] = 1                        
                     elif avg_val == 1:
-                        y_shrunk[row_small,col_small,1] = avg_val
+                        #y_shrunk[row_small,col_small,1] = avg_val
+                        y_shrunk[row_small,col_small,1] = 1
                     else:
-                        y_shrunk[row_small,col_small,2] = avg_val
+                        #y_shrunk[row_small,col_small,2] = avg_val
+                        y_shrunk[row_small,col_small,2] = 1
 
             #print("shrunk array shape: " + str(y_shrunk.shape))
 
