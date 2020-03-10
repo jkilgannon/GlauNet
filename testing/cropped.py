@@ -154,17 +154,17 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
             batch_end = batch_head + batchsize 
 
             #x_set = x.reshape((-1, 320, 480, 3))
-            x_set = x.reshape((-1, 150, 150, 3))
+            x_set = x.reshape((-1, 160, 160, 3))
             #y_shrunk = np.zeros((320,480), dtype=np.uint8)
             #y_shrunk = np.zeros((320,480,1), dtype=np.uint8)
             #y_shrunk = np.zeros((320,480,2), dtype=np.uint8)
             #y_shrunk = np.zeros((320,480,3), dtype=np.uint8)
-            y_shrunk = np.zeros((150,150,3), dtype=np.uint8)
+            y_shrunk = np.zeros((160, 160,3), dtype=np.uint8)
 
             #for row_small in range(0, 320):
             #    for col_small in range(0, 480):
-            for row_small in range(0, 150):
-                for col_small in range(0, 150):
+            for row_small in range(0, 160):
+                for col_small in range(0, 160):
                     row = row_small*3
                     col = col_small*3
                     total_value = y[row,col] + y[row,col+1] + y[row,col+2] + y[row+1,col] + y[row+1,col+1] + y[row+1,col+2] + y[row+2,col] + y[row+2,col+1] + y[row+2,col+2]
@@ -195,7 +195,7 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
             #y_set = y_shrunk.reshape((-1, 320, 480, 1))
             #y_set = y_shrunk.reshape((-1, 320, 480, 2))
             #y_set = y_shrunk.reshape((-1, 320, 480, 3))
-            y_set = y_shrunk.reshape((-1, 150, 150, 3))
+            y_set = y_shrunk.reshape((-1, 160, 160, 3))
 
             #print("x_set array shape: " + str(x_set.shape))
             #print("y_set array shape: " + str(y_set.shape))
@@ -218,7 +218,7 @@ out_path = '/outgoing/'
 batchsize = 1
 #input_size = (960, 1440, 3)
 #input_size = (320, 480, 3)
-input_size = (150, 150, 3)
+input_size = (160, 160, 3)
 neuron_default = 64
 
 input_layer = Input(input_size)
