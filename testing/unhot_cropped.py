@@ -13,19 +13,26 @@ print(fl.shape)
 
 resized = np.zeros((160,160,3), dtype=np.single)
 
-count = [0,0,0]
+# [Class 0, Class 1, Class 2, Class Uncertain]
+count = [0,0,0,0]
 
 for x in range(160):
     for y in range(160):
-        if fl[x,y,0] > fl[x,y,1] and fl[x,y,0] > fl[x,y,2]:
+        class_found = False
+        if fl[x,y,0] > 0.5:
             resized[x,y] = 0
             count[0] = count[0] + 1
-        if fl[x,y,1] > fl[x,y,0] and fl[x,y,1] > fl[x,y,2]:
+            class_found = True
+        if fl[x,y,1] > 0.5:
             resized[x,y] = 1
             count[1] = count[1] + 1
-        if fl[x,y,2] > fl[x,y,1] and fl[x,y,2] > fl[x,y,0]:
+            class_found = True
+        if fl[x,y,2] > 0.5:
             resized[x,y] = 2
             count[2] = count[2] + 1
+            class_found = True
+        if not class_found:
+            count[3] = count[3] + 1
 
 print(count)
 
