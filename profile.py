@@ -7,7 +7,7 @@ import geni.rspec.igext as IG
 # Create a portal context.
 pc = portal.Context()
 
-pc.defineParameter( "corecount", "Number of cores in each node (2 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 4 )
+pc.defineParameter( "corecount", "Number of cores in each node (1 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 4 )
 pc.defineParameter( "ramsize", "MB of RAM in each node (2048 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 56000 )
 params = pc.bindParameters()
 
