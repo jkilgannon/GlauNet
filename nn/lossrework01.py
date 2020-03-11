@@ -304,7 +304,7 @@ EARLYSTOP = EarlyStopping(patience=50,
                           restore_best_weights=True)
 
 # Save off the very best model we can find; avoids overfitting.
-CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
+CHKPT = ModelCheckpoint(output_path + 'best_model_incremental.h5', 
                      monitor=monitor_type, 
                      mode='min', 
                      verbose=1, 
