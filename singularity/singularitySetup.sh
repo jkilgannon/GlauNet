@@ -15,36 +15,28 @@ sudo pip3 install matplotlib
 
 # Make directories
 sudo mkdir /worksite
-sudo mkdir /worksite/inprime/
-sudo mkdir /worksite/inprimeval/
-sudo mkdir /worksite/inseg/
-sudo mkdir /worksite/insegval/
-sudo mkdir /worksite/inprime/all_data/
-sudo mkdir /worksite/inprimeval/all_data/
-sudo mkdir /worksite/inseg/all_data/
-sudo mkdir /worksite/insegval/all_data/
+sudo mkdir /worksite/fundus/
+sudo mkdir /worksite/fundusvalidate/
+sudo mkdir /worksite/mask/
+sudo mkdir /worksite/maskvalidate/
 sudo mkdir /outgoing/
 
 sudo chmod 777 /worksite
-sudo chmod 777 /worksite/inprime
-sudo chmod 777 /worksite/inprimeval
-sudo chmod 777 /worksite/inseg
-sudo chmod 777 /worksite/insegval
-sudo chmod 777 /worksite/inprime/all_data/
-sudo chmod 777 /worksite/inprimeval/all_data/
-sudo chmod 777 /worksite/inseg/all_data/
-sudo chmod 777 /worksite/insegval/all_data/
+sudo chmod 777 /worksite/fundus
+sudo chmod 777 /worksite/fundusvalidate
+sudo chmod 777 /worksite/mask
+sudo chmod 777 /worksite/maskvalidate
 sudo chmod 777 /outgoing
 
 # Copy files
-sudo cp /local/repository/inprime/* /worksite/inprime/all_data/
-sudo cp /local/repository/inprimeval/* /worksite/inprimeval/all_data/
-sudo cp /local/repository/inseg/* /worksite/inseg/all_data/
-sudo cp /local/repository/insegval/* /worksite/insegval/all_data/
+sudo cp /local/repository/inprime/* /worksite/fundus/
+sudo cp /local/repository/inprimeval/* /worksite/fundusvalidate/
+sudo cp /local/repository/inseg/* /worksite/mask/
+sudo cp /local/repository/insegval/* /worksite/maskvalidate/
 sudo cp /local/repository/nn/* /users/jk880380/
 
-sudo chmod 777 /worksite/inprime/all_data/*
-sudo chmod 777 /worksite/inprimeval/all_data/*
-sudo chmod 777 /worksite/inseg/all_data/*
-sudo chmod 777 /worksite/insegval/all_data/*
+sudo chmod 777 /worksite/fundus/*
+sudo chmod 777 /worksite/fundusvalidate/*
+sudo chmod 777 /worksite/mask/*
+sudo chmod 777 /worksite/maskvalidate/*
 sudo chmod 777 /users/jk880380/*
