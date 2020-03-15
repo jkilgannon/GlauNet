@@ -1,11 +1,6 @@
 import numpy as np
 
-shaper = np.zeros((320,480,3), dtype = np.double)
-desired_shape = type(shaper)
-
-#fl = np.fromfile('predicted.csv', dtype = desired_shape)
 fl = np.fromfile('predicted.csv', sep=",")
-
 fl = fl.reshape((320,480,3))
 
 print(type(fl))
@@ -27,7 +22,18 @@ for x in range(320):
             resized[x,y] = 2
             count[2] = count[2] + 1
 
-print(count)
+count_solo = [0,0,0]
+
+for x in range(320):
+    for y in range(480):
+        if fl[x,y,0] > 0.1:
+            count_solo[0] = count_solo[0] + 1
+        if fl[x,y,1] > 0.1:
+            count_solo[1] = count_solo[1] + 1
+        if fl[x,y,2] > 0.1:
+            count_solo[2] = count_solo[2] + 1
+
+print(count_solo)
 
 fl = np.savetxt('predicted_compiled.csv', resized.flatten(), delimiter=",")
 
