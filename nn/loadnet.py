@@ -13,6 +13,8 @@ import tensorflow as tf
 from PIL import Image
 import matplotlib.pyplot as plt
 
+input_size = (320, 480, 3)
+
 smoothing_factor = float(input_size[0] * input_size[1])
 print("smoothing factor: " + str(smoothing_factor))
 
