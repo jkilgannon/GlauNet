@@ -24,12 +24,22 @@ path_mask_val = '/worksite/maskvalidate/'
 out_path = '/outgoing/'
 #batchsize = 3
 batchsize = 1
-input_size = (960, 1440, 3)
+#input_size = (960, 1440, 3)
+input_size = (320, 480, 3)
 
 smoothing_factor = float(input_size[0] * input_size[1])
 print("smoothing factor: " + str(smoothing_factor))
 
-# We'll append this to the saved weights so we can run more than one 
+"""
+# Set up a test case with all '1' that can be used to force the
+#  network to keep away from the local optimum in which one
+#  class is all '1'
+all_ones = [1.0] * (input_size[0] * input_size[1])
+all_ones_class = np.array(all_ones)
+all_zeroes_class = np.zeros(input_size[0], input_size[1])), dtype=np.uint8)
+"""
+
+# We'll append this to the saved weights so we can run more than one
 #   version of this code at once
 run_number = randint(1, 10000000)
 
@@ -48,9 +58,36 @@ def dice_coeff(y_true, y_pred):
 
     y_true_real = tf.dtypes.cast(y_true, tf.float32)
     y_pred_real = tf.dtypes.cast(y_pred, tf.float32)
+    
+    numerators = 2 * tf.reduce_sum(y_true_real * y_pred_real, axis=(1,2))
+    denominators = tf.reduce_sum(y_true_real + y_pred_real, axis=(1,2))
+    
+    print(";;;;;;;")
+    print(numerators)
+    print(denominators)
+    print(";;;;;;;")
+    
+    numerator = smoothing_factor + tf.mean(numerators)
+    denominator = smoothing_factor + tf.mean(denominators)
 
-    numerator = smoothing_factor + (2 * tf.reduce_sum(y_true_real * y_pred_real, axis=(1,2,3)))
-    denominator = smoothing_factor + tf.reduce_sum(y_true_real + y_pred_real, axis=(1,2,3))
+    """
+    # Network can find a local optimum where a class is entirely 1 (everything is that class)
+    #   or entirely 0 (nothing is that class).  Push the network away from that, hard.
+    #   We know, from the real target data, that both these cases are impossible for real data.
+    epsilon = 10e-8
+    min_out_of_class = 5.0        # At least this many pixels must NOT be of a given class
+    for classnum in range(3):
+        if tf.reduce_sum(all_ones_class * y_pred[:,:,classnum]) > (smoothing_factor - min_out_of_class):
+            # Too many pixels are marked as being of class classnum.
+            return tf.reshape([1], (-1,1,1,1))
+        elif tf.reduce_sum(y_pred[:,:,classnum]) > epsilon:
+            # Too many pizels are marked as NOT being of class classnum.
+            return tf.reshape([1], (-1,1,1,1))
+    """
+
+    #numerator = smoothing_factor + (2 * tf.reduce_sum(y_true_real * y_pred_real, axis=(1,2,3)))
+    #denominator = smoothing_factor + tf.reduce_sum(y_true_real + y_pred_real, axis=(1,2,3))
+    
     return tf.reshape(numerator / denominator, (-1, 1, 1, 1))
 
 def soft_dice_loss(y_true, y_pred):
@@ -87,32 +124,74 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
 
             test_fundus = load_img(img, target_size=input_size)
 
+            #print("image type: " + str(type(test_fundus)))
+            #print("image shape: " + str(test_fundus.size))
+            #vvvv = list(test_fundus.getdata())
+            #print(vvvv[0])
+            #print(vvvv[1])
+            #print(vvvv[2])
+            #print(vvvv[12000])
+            ##print(str(test_fundus[0,0]) + " : " + str(test_fundus[0,1]))
+
             # https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
             x = image.img_to_array(test_fundus)
+
+            #print("image array type: " + str(type(x)))
+            #print("image array shape: " + str(x.shape))
+            #print(str(x[0,0]) + " : " + str(x[0,1]))
 
             # Get the target data, which is a saved numpy ndarray
             y = np.load(target)
 
+            #print("target type: " + str(type(y)))
+            #print("target shape: " + str(y.shape))
+            #print(str(y.shape[0]) + "," + str(y.shape[1]))
+            #ccc = ""
+            #for xxx in range(y.shape[0]):
+            #    for yyy in range(y.shape[1]):
+            #        ccc = ccc + str(y[xxx,yyy]) + ","
+            #
+            #text_file = open("image_array_as_text.txt", "w")
+            #n = text_file.write(ccc)
+            #text_file.close()
+            #print("Done output")
+            #print(str(y[0,0]) + " : " + str(y[0,1])  + " : " + str(y[0,2])  + " : " + str(y[0,3]))
+
             batch_head = batch_end + 1
             batch_end = batch_head + batchsize 
 
-            x_set = x.reshape((-1, 960, 1440, 3))
-            
-            y_onehot = np.zeros((960,1440,3), dtype=np.uint8)
-            for r in range(0, 960):
-                for c in range(0, 1440):
-                    # One-hot the categories
-                    if y[r,c] == 0:
-                        y_onehot[r,c,0] = 1
-                    elif y[r,c] == 1:
-                        y_onehot[r,c,1] = 1
-                    else:
-                        y_onehot[r,c,2] = 1
+            #x_set = x.reshape((-1, 320, 480, 3))
+            x_set = x.reshape((-1, input_size[0], input_size[1], input_size[2]))
+            #y_shrunk = np.zeros((320,480), dtype=np.uint8)
+            #y_shrunk = np.zeros((320,480,1), dtype=np.uint8)
+            #y_shrunk = np.zeros((320,480,2), dtype=np.uint8)
+            #y_shrunk = np.zeros((320,480,3), dtype=np.uint8)
+            y_shrunk = np.zeros((input_size[0], input_size[1], input_size[2]), dtype=np.double)
 
-            y_set = y_onehot.reshape((-1, 960, 1440, 3))
+            for row_small in range(0, input_size[0]):
+                for col_small in range(0, input_size[1]):
+                    row = row_small * 3
+                    col = col_small * 3
+                    total_value = y[row,col] + y[row,col+1] + y[row,col+2] + y[row+1,col] + y[row+1,col+1] + y[row+1,col+2] + y[row+2,col] + y[row+2,col+1] + y[row+2,col+2]
+
+                    # One-hot the categories
+                    avg_val = round(total_value / 9.0)
+                    if avg_val == 0:
+                        y_shrunk[row_small,col_small,0] = 1.0
+                    elif avg_val == 1:
+                        y_shrunk[row_small,col_small,1] = 1.0
+                    else:
+                        y_shrunk[row_small,col_small,2] = 1.0
+
+            #print("shrunk array shape: " + str(y_shrunk.shape))
+
+            #y_set = np.array(y, dtype=np.uint8)
+            #y_set = y_shrunk.reshape((-1, 320, 480, 3))
+            y_set = y_shrunk.reshape((-1, input_size[0], input_size[1], input_size[2]))
 
             #print("x_set array shape: " + str(x_set.shape))
             #print("y_set array shape: " + str(y_set.shape))
+            #print(x_set.shape) print(y_set.shape) print(y_set) print("--") print(str(counter)) counter += 1
 
             yield (x_set, y_set)
         
