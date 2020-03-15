@@ -6,7 +6,6 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
-#from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from tensorflow.keras import backend as keras
 import os
 import numpy as np
@@ -87,30 +86,7 @@ predicted = model.predict(images)
 print("predicted shape: " + str(predicted.shape))
 print("predicted type: "  + str(type(predicted)))
 
-#np.ndarray.tofile('predicted.csv', sep=',', predicted)
 predicted.tofile('predicted.csv', sep=',')
 print("Saved")
-
-##predicted_data = ''
-#for row in range(320):
-#    for col in range(480):
-#        print(predicted[0,row,col])
-#        #predicted_data = predicted_data + predicted[0, row,col] + ","
-##print(predicted_data)
-#
-#np.savetxt('predicted.csv', predicted)
-##predicted.save('predicted.npy')
-
-## https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
-#print("AAA")
-#plt.imshow(x[0])
-#plt.savefig("array")
-#print("BBB")
-#
-#segmented_image = Image.fromarray(predicted)
-#print("A")
-#segmented_image.save('predicted.png')
-#print("B")
-
 
 print("Done")
