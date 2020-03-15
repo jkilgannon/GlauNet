@@ -67,8 +67,8 @@ def dice_coeff(y_true, y_pred):
     print(denominators)
     print(";;;;;;;")
     
-    numerator = smoothing_factor + tf.mean(numerators)
-    denominator = smoothing_factor + tf.mean(denominators)
+    numerator = smoothing_factor + tf.reduce_mean(numerators)
+    denominator = smoothing_factor + tf.reduce_mean(denominators)
 
     """
     # Network can find a local optimum where a class is entirely 1 (everything is that class)
