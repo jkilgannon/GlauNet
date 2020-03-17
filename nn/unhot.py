@@ -22,6 +22,8 @@ for x in range(320):
             resized[x,y] = 2
             count[2] = count[2] + 1
 
+print(count)
+            
 count_solo = [0,0,0]
 
 for x in range(320):
