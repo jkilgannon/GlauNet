@@ -187,6 +187,7 @@ def custom_loss(y_true, y_pred):
     return keras.abs(keras.sum((y_true * 2 - keras.ones_like(y_true)) * y_pred))
 """
 
+"""
 def custom_loss(y_true, y_pred):
     # y_true: ground truth.  y_pred: predictions
     #
@@ -269,6 +270,88 @@ def custom_loss(y_true, y_pred):
     loss_2 = (K.abs(1 - alpha_2) + beta_2) / 2.0
     #loss = (loss_0 + loss_1 + loss_2) / 3.0
     return tf.reshape(tf.reduce_sum(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
+"""
+
+def custom_loss(y_true, y_pred):
+    # y_true: ground truth.  y_pred: predictions
+    #
+    # The logic behind this is that there are two factors in correctness:
+    # 1) How correct is the prediction?  This is calculated by:
+    #       A = prediction * ground truth.
+    #    This gives a "mask" which zeroes out all the incorrect pixels in
+    #    the prediction, leaving only the values [0..1] that it predicted
+    #    for pixels that are in the ground truth mask.
+    #    We then take |A|, the sum of all the predictions [0..1] within the
+    #    corrrect mask.
+    #       |GT| = Total number of pixels in the correct (ground truth) mask
+    #    Factor alpha, then, is |A| / |GT|.
+    #    Factor alpha is 0 when the prediction is awful, and 1 when it is perfect.
+    #
+    # 2) How incorrect is the prediction?  This is calculated by:
+    #       |B| = |prediction| - |A|
+    #    B would be the mask of all pixels that aren't in the ground truth.
+    #    We don't need to calculate the mask; we just calculate the sum of
+    #    all incorrect predictions.
+    #    Factor beta, then, is |B| / |predictions|.
+    #    Factor beta is 0 when the prediction is perfect, and 1 when it is awful.
+    #
+    # Now we can calculate the loss:
+    #    loss = [abs(alpha - 1) + beta] / 2
+    #
+    # We will calculate the loss for each class separately and then take the mean of them
+    # so that we don't have the largest class dominate the loss calculations.  (The smaller
+    # ones will have much more weight than usual, which is expected from our data, where
+    # the cup and disc are tiny compared to the background.)
+
+    y_true_real = tf.dtypes.cast(y_true, tf.float64)
+    y_pred_real = tf.dtypes.cast(y_pred, tf.float64)
+
+    # Separate the ground truth and prediction into their classes.
+    y_true_cls0 = y_true_real[:,:,:,0]
+    y_true_cls1 = y_true_real[:,:,:,1]
+    y_true_cls2 = y_true_real[:,:,:,2]
+
+    y_pred_cls0 = y_pred_real[:,:,:,0]
+    y_pred_cls1 = y_pred_real[:,:,:,1]
+    y_pred_cls2 = y_pred_real[:,:,:,2]
+
+    # y_true is 1 for correct pixels, and 0 for incorrect ones, so positive_diff is
+    # a "mask" of the right values in y_pred.  And negative_diff is a "mask" of the wrong
+    # values in y_pred.  The size variables contain the sums of those masks.
+
+    # Calculate A, GT, and factor alpha.
+    GT_size_0 = tf.reduce_sum(y_true_cls0, axis=(1,2))
+    A_size_0 = tf.reduce_sum((y_true_cls0 * y_pred_cls0), axis=(1,2))
+    alpha_0 = (1 + A_size_0) / (1 + GT_size_0)
+
+    GT_size_1 = tf.reduce_sum(y_true_cls1, axis=(1,2))
+    A_size_1 = tf.reduce_sum((y_true_cls1 * y_pred_cls1), axis=(1,2))
+    alpha_1 = (1 + A_size_1) / (1 + GT_size_1)
+
+    GT_size_2 = tf.reduce_sum(y_true_cls2, axis=(1,2))
+    A_size_2 = tf.reduce_sum((y_true_cls2 * y_pred_cls2), axis=(1,2))
+    alpha_2 = (1 + A_size_2) / (1 + GT_size_2)
+
+    # Calculate B, prediction, and factor beta.
+    pred_size_0 = tf.reduce_sum(y_pred_cls0, axis=(1,2))
+    B_size_0 = pred_size_0 - A_size_0
+    beta_0 = (1 + B_size_0) / (1 + pred_size_0)
+
+    pred_size_1 = tf.reduce_sum(y_pred_cls1, axis=(1,2))
+    B_size_1 = pred_size_1 - A_size_1
+    beta_1 = (1 + B_size_1) / (1 + pred_size_1)
+
+    pred_size_2 = tf.reduce_sum(y_pred_cls2, axis=(1,2))
+    B_size_2 = pred_size_2 - A_size_2
+    beta_2 = (1 + B_size_2) / (1 + pred_size_2)
+
+    # Calculate final losses
+    loss_0 = (K.abs(1 - alpha_0) + beta_0) / 2.0
+    loss_1 = (K.abs(1 - alpha_1) + beta_1) / 2.0
+    loss_2 = (K.abs(1 - alpha_2) + beta_2) / 2.0
+
+    #return tf.reshape(tf.reduce_mean(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
+    return tf.reshape(tf.reduce_mean(loss_0 + loss_1) / 2.0, (-1,1,1,1))
 
 
 def soft_loss(y_true, y_pred):
