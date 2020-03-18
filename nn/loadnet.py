@@ -19,80 +19,6 @@ import matplotlib.pyplot as plt
 def dice_coeff_inverted(y_true, y_pred, smooth=1e-7):
     return (1 - dice_coeff(y_true, y_pred, smooth))
 
-
-# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class 
-# https://github.com/keras-team/keras/issues/3611                                                                                                                                                          def 
-#dice_coeff(y_true, y_pred):
-def dice_coeff(y_true, y_pred, smooth=1e-7): 
-    intersection = keras.sum(y_true * y_pred, axis=[1,2,3])
-    union = keras.sum(y_true, axis=[1,2,3]) + keras.sum(y_pred, axis=[1,2,3])
-    return keras.mean( (2. * intersection + smooth) / (union + smooth), axis=0)    
-
-def dice_loss_2(y_true, y_pred):
-    numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2,3))
-    denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2,3))
-    return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
-
-def inverted_dice_2(y_true, y_pred):
-    return 1 - dice_loss_2(y_true, y_pred)
-
-def dice_loss_6(y_true, y_pred):
-    numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2))
-    denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2))
-    return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
-
-def inverted_dice_6(y_true, y_pred):
-    return 1 - dice_loss_6(y_true, y_pred)
-
-def manhattan_coeff(y_true, y_pred):
-    # Pseudo-Manhattan distance between the "locations" of the ground truth and
-    #  predicted arrays.  Came up with this one myself.
-
-    y_true_real = tf.dtypes.cast(y_true, tf.float32)
-    y_pred_real = tf.dtypes.cast(y_pred, tf.float32)
-
-    numerators = tf.reduce_sum(tf.math.abs(y_true_real - y_pred_real), axis=(1,2))
-    numerator = 3 * tf.reduce_mean(numerators)
-    denominator = input_size[0] * input_size[1] * input_size[2]
-
-    return tf.reshape(1 - (numerator / denominator), (-1, 1, 1, 1))
-
-    #numerator = smoothing_factor + (2 * tf.reduce_sum(y_true_real * y_pred_real, axis=(1,2,3)))
-    #denominator = smoothing_factor + tf.reduce_sum(y_true_real + y_pred_real, axis=(1,2,3))
-    #return tf.reshape(numerator / denominator, (-1, 1, 1, 1))
-
-
-#def custom_loss(y_true, y_pred):
-#    # https://stackoverflow.com/questions/49192051/converting-tensor-to-np-array-using-k-eval-in-keras-returns-invalidargumenterr
-#    return keras.abs(keras.sum((y_true * 2 - keras.ones_like(y_true)) * y_pred))
-
-
-#def soft_loss(y_true, y_pred):
-#    return 1 - custom_loss(y_true, y_pred)
-"""
-def custom_loss(y_true, y_pred):
-    # Dice loss.
-    # https://stackoverflow.com/questions/51100508/implementing-custom-loss-function-in-keras-with-condition
-    #y_pred = y_pred > thresh
-    smooth = 1e-5
-    thresh = 0.5
-
-    y_true_f = keras.flatten(y_true)
-    y_pred_f = keras.flatten(y_pred)
-    intersection = keras.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
-
-    ## https://stackoverflow.com/questions/49192051/converting-tensor-to-np-array-using-k-eval-in-keras-returns-invalidargumenterr
-    #return keras.abs(keras.sum((y_true * 2 - keras.ones_like(y_true)) * y_pred))
-
-
-#def soft_loss(y_true, y_pred):
-#    return 1 - custom_loss(y_true, y_pred)
-
-def soft_loss(y_true, y_pred):
-    return -custom_loss(y_true, y_pred)
-"""
-
 def custom_loss(y_true, y_pred):
     # y_true: ground truth.  y_pred: predictions
     #
@@ -174,13 +100,11 @@ def custom_loss(y_true, y_pred):
     loss_1 = (K.abs(1 - alpha_1) + beta_1) / 2.0
     loss_2 = (K.abs(1 - alpha_2) + beta_2) / 2.0
     #loss = (loss_0 + loss_1 + loss_2) / 3.0
-    return tf.reshape(tf.reduce_sum(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
-
+    #return tf.reshape(tf.reduce_sum(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
+    return tf.reshape(tf.reduce_mean(loss_0 + loss_1) / 2.0, (-1,1,1,1))
 
 def soft_loss(y_true, y_pred):
     return 1 - custom_loss(y_true, y_pred)
-
-
 
     	
 # UNet:
