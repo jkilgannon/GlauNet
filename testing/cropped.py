@@ -284,7 +284,7 @@ conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_
 #   if data_format='channels_last'. rows and cols values might have changed due to padding.
 #conv10 = Conv2D(2, 1, activation = 'sigmoid')(conv9)
 #conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
-conv10 = Conv2D(3, 1, activation = 'sigmoid')(conv9)
+conv10 = Conv2D(3, 1, activation = 'softmax')(conv9)
 
 model = Model(inputs = input_layer, outputs = conv10)
 
