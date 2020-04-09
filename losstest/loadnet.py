@@ -93,7 +93,8 @@ prevmodelfile = 'best_model_incremental.h5'
 #prevmodelfile = 'last_weights.h5'
 print(' Loading model: ' + prevmodelfile)
 #model = load_model(prevmodelfile)
-model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
+#model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
+model = load_model(prevmodelfile, custom_objects={'dice_coeff': dice_coeff})
 print("++++++++++++++")
 print(model.count_params())
 print("++++++++++++++")
@@ -133,17 +134,16 @@ print("Saved")
 #np.savetxt('predicted.csv', predicted)
 ##predicted.save('predicted.npy')
 
-# https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
-print("AAA")
-plt.imshow(x[0])
-plt.savefig("array")
-print("BBB")
-
-segmented_image = Image.fromarray(predicted)
-print("A")
-segmented_image.save('predicted.png')
-print("B")
+## https://stackoverflow.com/questions/13811334/saving-numpy-ndarray-in-python-as-an-image
+#print("AAA")
+#plt.imshow(x[0])
+#plt.savefig("array")
+#print("BBB")
+#
+#segmented_image = Image.fromarray(predicted)
+#print("A")
+#segmented_image.save('predicted.png')
+#print("B")
 
 
 print("Done")
-
