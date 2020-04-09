@@ -13,6 +13,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 from random import randint
+#from positional_loss import *
 
 
 num_fl = 130
@@ -28,8 +29,25 @@ batchsize = 1
 #input_size = (960, 1440, 3)
 input_size = (320, 480, 3)
 
+#sess = tf.Session()
+
 smoothing_factor = float(input_size[0] * input_size[1])
 print("smoothing factor: " + str(smoothing_factor))
+
+#y_true = tf.Variable(tf.zeros([batchsize, input_size[0], input_size[1], input_size[2]]))
+#y_pred = tf.Variable(tf.zeros([batchsize, input_size[0], input_size[1], input_size[2]]))
+#y_true = tf.placeholder(tf.float64, shape=(batchsize, input_size[0], input_size[1], input_size[2]))
+#y_pred = tf.placeholder(tf.float64, shape=(batchsize, input_size[0], input_size[1], input_size[2]))
+
+
+"""
+# Set up a test case with all '1' that can be used to force the
+#  network to keep away from the local optimum in which one
+#  class is all '1'
+all_ones = [1.0] * (input_size[0] * input_size[1])
+all_ones_class = np.array(all_ones)
+all_zeroes_class = np.zeros(input_size[0], input_size[1])), dtype=np.uint8)
+"""
 
 # We'll append this to the saved weights so we can run more than one
 #   version of this code at once
@@ -38,7 +56,223 @@ run_number = randint(1, 10000000)
 neuron_default = 64
 
 
+"""
 def custom_loss(y_true, y_pred):
+    y_true_real = np.array(tf.dtypes.cast(y_true, tf.float64))
+    y_pred_real = np.array(tf.dtypes.cast(y_pred, tf.float64))
+
+    xend = input_size[1] - 2          # -2 so we avoid the edges (which don't matter)
+    yend = input_size[0] - 2          # -2 so we avoid the edges (which don't matter)
+    numclasses = input_size[2]
+    numerators = np.zeros((batchsize, numclasses), dtype=np.float64)
+
+    # Calculate the local class possibilites.
+    for batch in range(batchsize):
+        for cls in range(numclasses):
+            for x in range(2, xend):
+                for y in range(2, yend):
+                    # Doing it in numpy.  WAY faster than doing it in TensorFlow b/c of a
+                    #  memory leak in TF.
+                    numerators[batch, cls] = numerators[batch, cls] + abs(64 * y_true_real[batch, y, x, cls] - (30 * y_pred_real[batch, y, x, cls] + 3 * (y_pred_real[batch, y-1, x-1, cls] + y_pred_real[batch, y, x-1, cls] + y_pred_real[batch, y+1, x-1, cls] + y_pred_real[batch, y-1, x, cls] + y_pred_real[batch, y+1, x, cls] + y_pred_real[batch, y-1, x+1, cls] + y_pred_real[batch, y, x+1, cls] + y_pred_real[batch, y+1, x+1, cls]) + y_pred_real[batch, y-1, x-2, cls] + y_pred_real[batch, y, x-2, cls] + y_pred_real[batch, y+1, x-2, cls] + y_pred_real[batch, y-2, x-1, cls] + y_pred_real[batch, y+2, x-1, cls] + y_pred_real[batch, y-2, x, cls] + y_pred_real[batch, y+2, x, cls] + y_pred_real[batch, y-2, x+1, cls] + y_pred_real[batch, y+2, x+1, cls] + y_pred_real[batch, y-1, x+2, cls] + y_pred_real[batch, y, x+2, cls] + y_pred_real[batch, y+1, x+2, cls]))
+
+    denominator = float(numclasses) * 66.0 * (input_size[0] - 4) * (input_size[1] - 4)
+
+    # Calculate the loss for each batch.  We want to weight the classes
+    #   equally, instead of letting one batch have too much influence.
+    loss = [0] * batchsize
+    for batch in range(batchsize):
+        for cls in range(numclasses):
+            loss[batch] = loss[batch] + numerators[batch, cls]
+        loss[batch] = loss[batch] / denominator
+
+    return tf.reshape(loss, (batchsize, 1, 1, 1))
+"""
+
+"""
+def custom_loss(y_true, y_pred):
+    y_true = tf.reshape(y_true, (batchsize, input_size[0], input_size[1], input_size[2]))
+    y_pred = tf.reshape(y_pred, (batchsize, input_size[0], input_size[1], input_size[2]))
+
+    y_true_real = np.array(tf.dtypes.cast(keras.eval(y_true), tf.float64))
+    y_pred_real = np.array(tf.dtypes.cast(keras.eval(y_pred), tf.float64))
+
+    #y_true_real = y_true_real.reshape(batchsize, input_size[0], input_size[1], input_size[2])
+    #y_pred_real = y_pred_real.reshape(batchsize, input_size[0], input_size[1], input_size[2])
+
+    print("=_=_=_=_=")
+    print(y_true.get_shape().as_list())
+    print(y_true_real.shape)
+    print("=_=_=_=_=")
+
+    xend = input_size[1] - 2          # -2 so we avoid the edges (which don't matter)
+    yend = input_size[0] - 2          # -2 so we avoid the edges (which don't matter)
+    numclasses = input_size[2]
+    numerators = np.zeros((numclasses), dtype=np.float64)
+
+    # Calculate the local class possibilites.
+    for batch in range(batchsize):
+        for cls in range(numclasses):
+            for x in range(2, xend):
+                for y in range(2, yend):
+                    # Doing it in numpy.  WAY faster than doing it in TensorFlow b/c of a
+                    #  memory leak in TF.
+                    numerators[batch, cls] = numerators[batch, cls] + abs(66.0 * y_true[batch, y, x, cls] - (30 * y_pred[batch, y, x, cls] + 3.0 * (y_pred[batch, y-1, x-1, cls] + y_pred[batch, y, x-1, cls] + y_pred[batch, y+1, x-1, cls] + y_pred[batch, y-1, x, cls] + y_pred[batch, y+1, x, cls] + y_pred[batch, y-1, x+1, cls] + y_pred[batch, y, x+1, cls] + y_pred[batch, y+1, x+1, cls]) + y_pred[batch, y-1, x-2, cls] + y_pred[batch, y, x-2, cls] + y_pred[batch, y+1, x-2, cls] + y_pred[batch, y-2, x-1, cls] + y_pred[batch, y+2, x-1, cls] + y_pred[batch, y-2, x, cls] + y_pred[batch, y+2, x, cls] + y_pred[batch, y-2, x+1, cls] + y_pred[batch, y+2, x+1, cls] + y_pred[batch, y-1, x+2, cls] + y_pred[batch, y, x+2, cls] + y_pred[batch, y+1, x+2, cls]))
+
+    denominator = float(numclasses) * 66.0 * (input_size[0] - 4) * (input_size[1] - 4)
+
+    # Calculate the loss for each batch.  We want to weight the classes
+    #   equally, instead of letting one batch have too much influence.
+    loss = [0] * batchsize
+    for batch in range(batchsize):
+        for cls in range(numclasses):
+            loss[batch] = loss[batch] + numerators[batch, cls]
+        loss[batch] = loss[batch] / denominator
+
+    return tf.reshape(loss, (batchsize, 1, 1, 1))
+"""
+"""
+def custom_loss(y_true, y_pred):
+    #y_true = tf.reshape(y_true, (batchsize, input_size[0], input_size[1], input_size[2]))
+    #y_pred = tf.reshape(y_pred, (batchsize, input_size[0], input_size[1], input_size[2]))
+
+    #y_true_real = np.array(tf.dtypes.cast(keras.eval(y_true), tf.float64))
+    #y_pred_real = np.array(tf.dtypes.cast(keras.eval(y_pred), tf.float64))
+
+    y_true_real = keras.eval(tf.dtypes.cast(y_true, tf.float64))
+    y_pred_real = keras.eval(tf.dtypes.cast(y_pred, tf.float64))
+
+    #with tf.Session() as sess:
+    #    y_true_real = np.array(tf.dtypes.cast(y_true.eval(session=sess), tf.float64))
+    #    y_pred_real = np.array(tf.dtypes.cast(y_pred.eval(session=sess), tf.float64))
+
+
+    #y_true_real = y_true_real.reshape(batchsize, input_size[0], input_size[1], input_size[2])
+    #y_pred_real = y_pred_real.reshape(batchsize, input_size[0], input_size[1], input_size[2])
+
+    print("=_=_=_=_=")
+    print(y_true.get_shape().as_list())
+    print(y_true_real.shape)
+    print("=_=_=_=_=")
+
+    xend = input_size[1] - 2          # -2 so we avoid the edges (which don't matter)
+    yend = input_size[0] - 2          # -2 so we avoid the edges (which don't matter)
+    numclasses = input_size[2]
+    numerators = np.zeros((numclasses), dtype=np.float64)
+
+    # Calculate the local class possibilites.
+    for batch in range(batchsize):
+        for cls in range(numclasses):
+            for x in range(2, xend):
+                for y in range(2, yend):
+                    # Doing it in numpy.  WAY faster than doing it in TensorFlow b/c of a
+                    #  memory leak in TF.
+                    numerators[batch, cls] = numerators[batch, cls] + abs(66.0 * y_true[batch, y, x, cls] - (30 * y_pred[batch, y, x, cls] + 3.0 * (y_pred[batch, y-1, x-1, cls] + y_pred[batch, y, x-1, cls] + y_pred[batch, y+1, x-1, cls] + y_pred[batch, y-1, x, cls] + y_pred[batch, y+1, x, cls] + y_pred[batch, y-1, x+1, cls] + y_pred[batch, y, x+1, cls] + y_pred[batch, y+1, x+1, cls]) + y_pred[batch, y-1, x-2, cls] + y_pred[batch, y, x-2, cls] + y_pred[batch, y+1, x-2, cls] + y_pred[batch, y-2, x-1, cls] + y_pred[batch, y+2, x-1, cls] + y_pred[batch, y-2, x, cls] + y_pred[batch, y+2, x, cls] + y_pred[batch, y-2, x+1, cls] + y_pred[batch, y+2, x+1, cls] + y_pred[batch, y-1, x+2, cls] + y_pred[batch, y, x+2, cls] + y_pred[batch, y+1, x+2, cls]))
+
+    denominator = float(numclasses) * 66.0 * (input_size[0] - 4) * (input_size[1] - 4)
+
+    # Calculate the loss for each batch.  We want to weight the classes
+    #   equally, instead of letting one batch have too much influence.
+    loss = [0] * batchsize
+    for batch in range(batchsize):
+        for cls in range(numclasses):
+            loss[batch] = loss[batch] + numerators[batch, cls]
+        loss[batch] = loss[batch] / denominator
+
+    return tf.reshape(loss, (batchsize, 1, 1, 1))
+"""
+
+"""
+def custom_loss(y_true, y_pred):
+    # https://stackoverflow.com/questions/49192051/converting-tensor-to-np-array-using-k-eval-in-keras-returns-invalidargumenterr
+    return keras.abs(keras.sum((y_true * 2 - keras.ones_like(y_true)) * y_pred))
+"""
+
+"""
+def custom_loss(y_true, y_pred):
+    # y_true: ground truth.  y_pred: predictions
+    #
+    # The logic behind this is that there are two factors in correctness:
+    # 1) How correct is the prediction?  This is calculated by:
+    #       A = prediction * ground truth.
+    #    This gives a "mask" which zeroes out all the incorrect pixels in
+    #    the prediction, leaving only the values [0..1] that it predicted
+    #    for pixels that are in the ground truth mask.
+    #    We then take |A|, the sum of all the predictions [0..1] within the
+    #    corrrect mask.
+    #       |GT| = Total number of pixels in the correct (ground truth) mask
+    #    Factor alpha, then, is |A| / |GT|.
+    #    Factor alpha is 0 when the prediction is awful, and 1 when it is perfect.
+    #
+    # 2) How incorrect is the prediction?  This is calculated by:
+    #       |B| = |prediction| - |A|
+    #    B would be the mask of all pixels that aren't in the ground truth.
+    #    We don't need to calculate the mask; we just calculate the sum of
+    #    all incorrect predictions.
+    #    Factor beta, then, is |B| / |predictions|.
+    #    Factor beta is 0 when the prediction is perfect, and 1 when it is awful.
+    #
+    # Now we can calculate the loss:
+    #    loss = [abs(alpha - 1) + beta] / 2
+    #
+    # We will calculate the loss for each class separately and then take the mean of them
+    # so that we don't have the largest class dominate the loss calculations.  (The smaller
+    # ones will have much more weight than usual, which is expected from our data, where
+    # the cup and disc are tiny compared to the background.)
+
+    y_true_real = tf.dtypes.cast(y_true, tf.float64)
+    y_pred_real = tf.dtypes.cast(y_pred, tf.float64)
+
+    # Separate the ground truth and prediction into their classes.
+    y_true_cls0 = y_true_real[:,:,:,0]
+    y_true_cls1 = y_true_real[:,:,:,1]
+    y_true_cls2 = y_true_real[:,:,:,2]
+
+    y_pred_cls0 = y_pred_real[:,:,:,0]
+    y_pred_cls1 = y_pred_real[:,:,:,1]
+    y_pred_cls2 = y_pred_real[:,:,:,2]
+
+    # y_true is 1 for correct pixels, and 0 for incorrect ones, so positive_diff is
+    # a "mask" of the right values in y_pred.  And negative_diff is a "mask" of the wrong
+    # values in y_pred.  The size variables contain the sums of those masks.
+
+    # Calculate A, GT, and factor alpha.
+    GT_size_0 = tf.reduce_sum(y_true_cls0, axis=(1,2))
+    A_size_0 = tf.reduce_sum((y_true_cls0 * y_pred_cls0), axis=(1,2))
+    alpha_0 = A_size_0 / GT_size_0
+
+    GT_size_1 = tf.reduce_sum(y_true_cls1, axis=(1,2))
+    A_size_1 = tf.reduce_sum((y_true_cls1 * y_pred_cls1), axis=(1,2))
+    alpha_1 = A_size_1 / GT_size_1
+
+    GT_size_2 = tf.reduce_sum(y_true_cls2, axis=(1,2))
+    A_size_2 = tf.reduce_sum((y_true_cls2 * y_pred_cls2), axis=(1,2))
+    alpha_2 = A_size_2 / GT_size_2
+
+    #positive_diff = y_true_cls0 * y_pred_cls0
+    #B_size_0 = A_size_0 - tf.reduce_sum(positive_diff, axis=(1,2))
+
+    # Calculate B, prediction, and factor beta.
+    pred_size_0 = tf.reduce_sum(y_pred_cls0, axis=(1,2))
+    B_size_0 = pred_size_0 - A_size_0
+    beta_0 = B_size_0 / pred_size_0
+
+    pred_size_1 = tf.reduce_sum(y_pred_cls1, axis=(1,2))
+    B_size_1 = pred_size_1 - A_size_1
+    beta_1 = B_size_1 / pred_size_1
+
+    pred_size_2 = tf.reduce_sum(y_pred_cls2, axis=(1,2))
+    B_size_2 = pred_size_2 - A_size_2
+    beta_2 = B_size_2 / pred_size_2
+
+    # Calculate final losses
+    loss_0 = (K.abs(1 - alpha_0) + beta_0) / 2.0
+    loss_1 = (K.abs(1 - alpha_1) + beta_1) / 2.0
+    loss_2 = (K.abs(1 - alpha_2) + beta_2) / 2.0
+    #loss = (loss_0 + loss_1 + loss_2) / 3.0
+    return tf.reshape(tf.reduce_sum(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
+"""
+
+def custom_loss_jck(y_true, y_pred):
     # y_true: ground truth.  y_pred: predictions
     #
     # The logic behind this is that there are two factors in correctness:
@@ -111,14 +345,49 @@ def custom_loss(y_true, y_pred):
     B_size_2 = pred_size_2 - A_size_2
     beta_2 = (1 + B_size_2) / (1 + pred_size_2)
 
-    # Calculate final losses.  Boost beta, which is the
-    #  "you are wrong" metric.
-    boost_metric = 5.0
-    loss_0 = (K.abs(1 - alpha_0) + boost_metric * beta_0) / (1.0 + boost_metric)
-    loss_1 = (K.abs(1 - alpha_1) + boost_metric * beta_1) / (1.0 + boost_metric)
-    loss_2 = (K.abs(1 - alpha_2) + boost_metric * beta_2) / (1.0 + boost_metric)
+    # Calculate final losses
+    loss_0 = (K.abs(1 - alpha_0) + beta_0) / 2.0
+    loss_1 = (K.abs(1 - alpha_1) + beta_1) / 2.0
+    loss_2 = (K.abs(1 - alpha_2) + beta_2) / 2.0
 
-    return tf.reshape(tf.reduce_mean(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
+    #return tf.reshape(tf.reduce_mean(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
+    return tf.reshape(tf.reduce_mean(loss_0 + loss_1) / 2.0, (-1,1,1,1))
+
+#def dice_coeff(y_true, y_pred, smooth=1e-7):
+def custom_loss(y_true, y_pred, smooth=1e-7):
+    # Break into classes, get the dice coefficient for each class,
+    # then combine them.
+    # Class 2 is "everything other than cup and disc"
+
+    y_true_real = tf.dtypes.cast(y_true, tf.float64)
+    y_pred_real = tf.dtypes.cast(y_pred, tf.float64)
+
+    # Separate the ground truth and prediction into their classes.
+    y_true_cls0 = y_true_real[:,:,:,0]
+    y_true_cls1 = y_true_real[:,:,:,1]
+    y_true_cls2 = y_true_real[:,:,:,2]
+
+    y_pred_cls0 = y_pred_real[:,:,:,0]
+    y_pred_cls1 = y_pred_real[:,:,:,1]
+    y_pred_cls2 = y_pred_real[:,:,:,2]
+
+    # Dice coefficient: https://github.com/keras-team/keras/issues/3611
+    intersection = K.sum(y_true_cls0 * y_pred_cls0, axis=[1,2])
+    union = K.sum(y_true_cls0, axis=[1,2]) + K.sum(y_pred_cls0, axis=[1,2])
+    dice_0 = K.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
+
+    intersection = K.sum(y_true_cls1 * y_pred_cls1, axis=[1,2])
+    union = K.sum(y_true_cls1, axis=[1,2]) + K.sum(y_pred_cls1, axis=[1,2])
+    dice_1 = K.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
+
+    intersection = K.sum(y_true_cls2 * y_pred_cls2, axis=[1,2])
+    union = K.sum(y_true_cls2, axis=[1,2]) + K.sum(y_pred_cls2, axis=[1,2])
+    dice_2 = K.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
+
+    ## Increase the worth of classes 0 and 1, since they really matter.
+    #disc_and_cup_adv = 3.0
+
+    return tf.reshape(tf.reduce_mean(dice_0 + dice_1 + dice_2) / 3.0, (-1,1,1,1))
 
 
 def soft_loss(y_true, y_pred):
@@ -264,26 +533,26 @@ def main():
 
     up6 = UpSampling2D(size = (2,2))(drop5)
     up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up6)
-    #merge6 = concatenate([conv4,up6])
-    drop6 = Dropout(0.25)(up6)
+    merge6 = concatenate([conv4,up6])
+    drop6 = Dropout(0.25)(merge6)
     conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop6)
     conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
 
     up7 = Conv2DTranspose(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
-    #merge7 = concatenate([conv3,up7])
-    drop7 = Dropout(0.25)(up7)
+    merge7 = concatenate([conv3,up7])
+    drop7 = Dropout(0.25)(merge7)
     conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop7)
     conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
 
     up8 = Conv2DTranspose(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
-    #merge8 = concatenate([conv2,up8])
-    drop8 = Dropout(0.25)(up8)
+    merge8 = concatenate([conv2,up8])
+    drop8 = Dropout(0.25)(merge8)
     conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop8)
     conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
 
     up9 = Conv2DTranspose(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
-    #merge9 = concatenate([conv1,up9])
-    drop9 = Dropout(0.25)(up9)
+    merge9 = concatenate([conv1,up9])
+    drop9 = Dropout(0.25)(merge9)
     conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop9)
     conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 
