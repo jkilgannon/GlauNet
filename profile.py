@@ -9,6 +9,7 @@ pc = portal.Context()
 
 pc.defineParameter( "corecount", "Number of cores in each node (1 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 4 )
 pc.defineParameter( "ramsize", "MB of RAM in each node (2048 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 56000 )
+pc.defineParameter( "hdsize", "GB of hard drive (2 or more).  NB: Make certain your requested cluster can supply this quantity.", portal.ParameterType.INTEGER, 32 )
 params = pc.bindParameters()
 
 # Create a Request object to start building the RSpec.
@@ -35,6 +36,7 @@ node = request.XenVM("glaunet1")
 node.cores = params.corecount
 node.ram = params.ramsize
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD"
+node.Attribute('XEN_EXTRAFS',str(hdsize))
 
 #iface = node.addInterface("if1")
 #iface.component_id = "eth1"
