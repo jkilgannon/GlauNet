@@ -15,7 +15,19 @@ import tensorflow as tf
 from PIL import Image
 import matplotlib.pyplot as plt
 
+num_fl = 9
+num_fl_val = 9
+#num_fl = 130
+#num_fl_val = 32
+out_path = '/outgoing/'
+#batchsize = 3
+batchsize = 1
+#input_size = (960, 1440, 3)
+input_size = (320, 480, 3)
+loss_divisor = float(input_size[0] * input_size[1] * input_size[2])
 
+
+"""
 def dice_coeff_inverted(y_true, y_pred, smooth=1e-7):
     return (1 - dice_coeff(y_true, y_pred, smooth))
 
@@ -102,24 +114,46 @@ def custom_loss(y_true, y_pred):
     #loss = (loss_0 + loss_1 + loss_2) / 3.0
     #return tf.reshape(tf.reduce_sum(loss_0 + loss_1 + loss_2) / 3.0, (-1,1,1,1))
     return tf.reshape(tf.reduce_mean(loss_0 + loss_1) / 2.0, (-1,1,1,1))
+"""
+
+def custom_loss(y_true, y_pred):
+    # y_true: ground truth.  y_pred: predictions
+
+    y_true_real = tf.dtypes.cast(y_true, tf.float64)
+    y_pred_real = tf.dtypes.cast(y_pred, tf.float64)
+
+    # Separate the ground truth and prediction into their classes.
+    y_true_cls0 = y_true_real[:,:,:,0]
+    y_true_cls1 = y_true_real[:,:,:,1]
+    y_true_cls2 = y_true_real[:,:,:,2]
+
+    y_pred_cls0 = y_pred_real[:,:,:,0]
+    y_pred_cls1 = y_pred_real[:,:,:,1]
+    y_pred_cls2 = y_pred_real[:,:,:,2]
+
+    # Calculate the mask for correct pixels
+    mask_0 = y_true_cls0 * y_pred_cls0
+    mask_1 = y_true_cls1 * y_pred_cls1
+    mask_2 = y_true_cls2 * y_pred_cls2
+
+    # Calculate False Positives (FP)
+    FP_0 = tf.reduce_sum((y_pred_cls0 - mask_0), axis=(1,2))
+    FP_1 = tf.reduce_sum((y_pred_cls1 - mask_1), axis=(1,2))
+    FP_2 = tf.reduce_sum((y_pred_cls2 - mask_2), axis=(1,2))
+
+    # Calculate False Negatives (FN)
+    FN_0 = tf.reduce_sum(tf.math.abs(y_true_cls0 - mask_0), axis=(1,2))
+    FN_1 = tf.reduce_sum(tf.math.abs(y_true_cls1 - mask_1), axis=(1,2))
+    FN_2 = tf.reduce_sum(tf.math.abs(y_true_cls2 - mask_2), axis=(1,2))
+
+    loss = (FP_0 + FP_1 + FP_2 + FN_0 + FN_1 + FN_2) / loss_divisor
+
+    return loss
+
 
 def soft_loss(y_true, y_pred):
     return 1 - custom_loss(y_true, y_pred)
 
-    	
-# UNet:
-# https://github.com/zhixuhao/unet
-num_fl = 9
-num_fl_val = 9
-#num_fl = 130
-#num_fl_val = 32
-out_path = '/outgoing/'
-
-#batchsize = 3
-batchsize = 1
-#input_size = (960, 1440, 3)
-#input_size = (320, 480, 3)
-input_size = (320, 480, 1)
 
 # Load the model from file
 prevmodelfile = 'best_model_incremental.h5'
@@ -141,17 +175,14 @@ print("++++++++++++++")
 os.system('vmstat -s')
 print("++++++++++++++")
 
-img = 'test.npy'
-test_fundus = np.load(img)
+img = 'test.tif'
+test_fundus = load_img(img, target_size=input_size)
 
-## https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
-#x = image.img_to_array(test_fundus)
-#x = np.expand_dims(x, axis=0)
-#images = np.vstack([x])
-## end of stackoverflow
-
-images = test_fundus.reshape((-1, input_size[0], input_size[1], input_size[2]))
-
+# https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
+x = image.img_to_array(test_fundus)
+x = np.expand_dims(x, axis=0)
+images = np.vstack([x])
+# end of stackoverflow
 
 predicted = model.predict(images)
 
