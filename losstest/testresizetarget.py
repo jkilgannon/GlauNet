@@ -22,26 +22,12 @@ def combine_generator(gen1, gen2):
 
 # https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
 def dice_coeff(y_true, y_pred):
-    #print("y_true array shape: " + str(y_true.shape))
-    #print("y_pred array shape: " + str(y_pred.shape))
-
     smooth = 1.
     y_true_f = keras.flatten(y_true)
     y_pred_f = keras.flatten(y_pred)
-
-    #print("y_true_f array shape: " + str(y_true_f.shape))
-    #print("y_pred_f array shape: " + str(y_pred_f.shape))
-    #input("waiting")
-
     intersection = keras.sum(y_true_f * y_pred_f)
     return 1 - (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
 
-
-#def iou_coeff(target, prediction):
-#  #https://www.jeremyjordan.me/evaluating-image-segmentation-models/
-#  intersection = np.logical_and(target, prediction)
-#  union = np.logical_or(target, prediction)
-#  return (np.sum(intersection) / np.sum(union))
 
 # https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
 def iou_coeff(y_true, y_pred, smooth=1):
@@ -118,7 +104,6 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
             batch_end = batch_head + batchsize 
 
             x_set = x.reshape((-1, 320, 480, 3))
-            #y_shrunk = np.zeros((320,480), dtype=np.uint8)
             #y_shrunk = np.zeros((320,480,1), dtype=np.uint8)
             #y_shrunk = np.zeros((320,480,2), dtype=np.uint8)
             y_shrunk = np.zeros((320,480,3), dtype=np.uint8)
@@ -128,31 +113,16 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
                     row = row_small*3
                     col = col_small*3
                     total_value = y[row,col] + y[row,col+1] + y[row,col+2] + y[row+1,col] + y[row+1,col+1] + y[row+1,col+2] + y[row+2,col] + y[row+2,col+1] + y[row+2,col+2]
-                    ##y_shrunk[row_small,col_small] = round(total_value / 9)
-                    #y_shrunk[row_small,col_small,0] = round(total_value / 9)
-
-                    #avg_val = round(total_value / 9)
-                    #y_shrunk[row_small,col_small,0] = avg_val
-                    #y_shrunk[row_small,col_small,1] = avg_val
-                    #y_shrunk[row_small,col_small,2] = avg_val
-
-                    # One-hot the categories
+                    #y_shrunk[row_small,col_small] = round(total_value / 9)
                     avg_val = round(total_value / 9)
-                    if avg_val == 0:
-                        #y_shrunk[row_small,col_small,0] = avg_val
-                        y_shrunk[row_small,col_small,0] = 1                        
-                    elif avg_val == 1:
-                        #y_shrunk[row_small,col_small,1] = avg_val
-                        y_shrunk[row_small,col_small,1] = 1
-                    else:
-                        #y_shrunk[row_small,col_small,2] = avg_val
-                        y_shrunk[row_small,col_small,2] = 1
+                    y_shrunk[row_small,col_small,0] = avg_val
+                    y_shrunk[row_small,col_small,1] = avg_val
+                    y_shrunk[row_small,col_small,2] = avg_val
 
             #print("shrunk array shape: " + str(y_shrunk.shape))
 
-            #y_set = np.array(y, dtype=np.uint8)
+            y_set = np.array(y, dtype=np.uint8)
             #y_set = y_shrunk.reshape((-1, 320, 480))
-            #y_set = y_shrunk.reshape((-1, 320, 480, 1))
             #y_set = y_shrunk.reshape((-1, 320, 480, 2))
             y_set = y_shrunk.reshape((-1, 320, 480, 3))
 
@@ -180,55 +150,49 @@ out_path = '/outgoing/'
 batchsize = 1
 #input_size = (960, 1440, 3)
 input_size = (320, 480, 3)
-neuron_default = 64
 
 input_layer = Input(input_size)
 
-conv1 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(input_layer)
-conv1 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
+conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+conv1 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
 pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 
-conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
-conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
+conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
+conv2 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
 pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
 
-conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
-conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
+conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
+conv3 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
 pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
 
-conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
-conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
+conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
+conv4 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
 drop4 = Dropout(0.5)(conv4)
 pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
 
-conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
-conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
-#drop5 = Dropout(0.5)(conv5)
+conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
+conv5 = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+drop5 = Dropout(0.5)(conv5)
 
-#up6 = Conv2D(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
-#up6 = Conv2D(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv5))
-up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv5))
+up6 = Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
 merge6 = concatenate([drop4,up6], axis = 3)
-conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
-conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
+conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
 
-#up7 = Conv2D(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
-up7 = Conv2DTranspose(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
+up7 = Conv2D(256, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
 merge7 = concatenate([conv3,up7], axis = 3)
-conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
-conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
+conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
 
-#up8 = Conv2D(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
-up8 = Conv2DTranspose(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
+up8 = Conv2D(128, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
 merge8 = concatenate([conv2,up8], axis = 3)
-conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
-conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
+conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
 
-#up9 = Conv2D(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
-up9 = Conv2DTranspose(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
+up9 = Conv2D(64, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
 merge9 = concatenate([conv1,up9], axis = 3)
-conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
-conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 conv9 = Conv2D(3, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 
@@ -237,8 +201,8 @@ conv9 = Conv2D(3, 3, activation = 'relu', padding = 'same', kernel_initializer =
 #   if data_format='channels_first' or 4D tensor with shape: (samples, new_rows, new_cols, filters) 
 #   if data_format='channels_last'. rows and cols values might have changed due to padding.
 #conv10 = Conv2D(2, 1, activation = 'sigmoid')(conv9)
-#conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
-conv10 = Conv2D(3, 1, activation = 'sigmoid')(conv9)
+conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
+#conv10 = Conv2D(3, 1, activation = 'sigmoid')(conv9)
 
 model = Model(inputs = input_layer, outputs = conv10)
 
@@ -246,11 +210,10 @@ model = Model(inputs = input_layer, outputs = conv10)
 monitor_type = 'loss'
 
 #model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
+
+model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coeff, metrics = ['accuracy'])
+
 #model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
-
-#model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coeff, metrics = ['accuracy'])
-model.compile(optimizer = Adam(lr = 1e-4), loss = dice_coeff, metrics = ['accuracy'])
-
 
 print("++++++++++++++")
 print(model.count_params())

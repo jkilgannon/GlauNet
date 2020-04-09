@@ -19,22 +19,29 @@ def combine_generator(gen1, gen2):
     while True:
         yield(gen1.next(), gen2.next())
 
+def dice_coeff_inverted(y_true, y_pred, smooth=1e-7):
+    return (1 - dice_coeff(y_true, y_pred, smooth))
 
-# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
-def dice_coeff(y_true, y_pred):
-    #print("y_true array shape: " + str(y_true.shape))
-    #print("y_pred array shape: " + str(y_pred.shape))
+# https://github.com/keras-team/keras/issues/3611
+def dice_coeff(y_true, y_pred, smooth=1e-7):
+    intersection = keras.sum(y_true * y_pred, axis=[1,2,3])
+    union = keras.sum(y_true, axis=[1,2,3]) + keras.sum(y_pred, axis=[1,2,3])
+    return keras.mean( (2. * intersection + smooth) / (union + smooth), axis=0)
 
-    smooth = 1.
-    y_true_f = keras.flatten(y_true)
-    y_pred_f = keras.flatten(y_pred)
-
-    #print("y_true_f array shape: " + str(y_true_f.shape))
-    #print("y_pred_f array shape: " + str(y_pred_f.shape))
-    #input("waiting")
-
-    intersection = keras.sum(y_true_f * y_pred_f)
-    return 1 - (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
+    # https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
+    ##print("y_true array shape: " + str(y_true.shape))
+    ##print("y_pred array shape: " + str(y_pred.shape))
+    #
+    #smooth = 1.
+    #y_true_f = keras.flatten(y_true)
+    #y_pred_f = keras.flatten(y_pred)
+    #
+    ##print("y_true_f array shape: " + str(y_true_f.shape))
+    ##print("y_pred_f array shape: " + str(y_pred_f.shape))
+    ##input("waiting")
+    #
+    #intersection = keras.sum(y_true_f * y_pred_f)
+    #return 1 - (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
 
 
 #def iou_coeff(target, prediction):
@@ -49,6 +56,36 @@ def iou_coeff(y_true, y_pred, smooth=1):
   union = keras.sum(y_true,[1,2,3])+keras.sum(y_pred,[1,2,3])-intersection
   iou = keras.mean((intersection + smooth) / (union + smooth), axis=0)
   return iou
+
+# https://lars76.github.io/neural-networks/object-detection/losses-for-segmentation/
+def crossentropy_plus_dice_loss(y_true, y_pred):
+    def dice_loss_local(y_true, y_pred):
+        numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2,3))
+        denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2,3))
+        return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
+        
+    return binary_crossentropy(y_true, y_pred) + dice_loss_local(y_true, y_pred)
+
+def inverted_CE_plus_dice(y_true, y_pred):
+    return 1 - crossentropy_plus_dice_loss(y_true, y_pred)
+
+# https://lars76.github.io/neural-networks/object-detection/losses-for-segmentation/
+def dice_loss_2(y_true, y_pred):
+    numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2,3))
+    denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2,3))
+    return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
+
+def inverted_dice_2(y_true, y_pred):
+    return 1 - dice_loss_2(y_true, y_pred)
+
+def dice_loss_6(y_true, y_pred):
+    numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2))
+    denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2))
+    return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
+
+def inverted_dice_6(y_true, y_pred):
+    return 1 - dice_loss_6(y_true, y_pred)
+
 
 
 # A Python generator that will give the fit_generator data in batches.
@@ -162,7 +199,6 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
 
             yield (x_set, y_set)
         
-
 # UNet:
 # https://github.com/zhixuhao/unet
 
@@ -187,50 +223,78 @@ input_layer = Input(input_size)
 conv1 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(input_layer)
 conv1 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
 pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+drop1 = Dropout(0.25)(pool1)
 
-conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
+#conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
+conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop1)
 conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
 pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+drop2 = Dropout(0.25)(pool2)
 
-conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
+#conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
+conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop2)
 conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
 pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+drop3 = Dropout(0.25)(pool3)
 
-conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
+#conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
+conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop3)
 conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
-drop4 = Dropout(0.5)(conv4)
-pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
+#drop4 = Dropout(0.5)(conv4)
+#pool4 = MaxPooling2D(pool_size=(2, 2))(drop4)
+pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
+drop4 = Dropout(0.25)(pool4)
 
-conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
+## Center point
+#conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
+conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop4)
 conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
-#drop5 = Dropout(0.5)(conv5)
+drop5 = Dropout(0.5)(conv5)
 
 #up6 = Conv2D(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
 #up6 = Conv2D(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv5))
-up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv5))
-merge6 = concatenate([drop4,up6], axis = 3)
-conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+up6 = UpSampling2D(size = (2,2))(drop5)
+#up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(drop5))
+up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up6)
+#up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+#merge6 = concatenate([drop4,up6], axis = 3)
+merge6 = concatenate([conv4,up6])
+drop6 = Dropout(0.25)(merge6)
+#conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop6)
 conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
 
 #up7 = Conv2D(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
 up7 = Conv2DTranspose(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
-merge7 = concatenate([conv3,up7], axis = 3)
-conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+#up7 = Conv2DTranspose(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
+#merge7 = concatenate([conv3,up7], axis = 3)
+merge7 = concatenate([conv3,up7])
+drop7 = Dropout(0.25)(merge7)
+#conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop7)
 conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
 
 #up8 = Conv2D(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
 up8 = Conv2DTranspose(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
-merge8 = concatenate([conv2,up8], axis = 3)
-conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+#up8 = Conv2DTranspose(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
+#merge8 = concatenate([conv2,up8], axis = 3)
+merge8 = concatenate([conv2,up8])
+drop8 = Dropout(0.25)(merge8)
+#conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop8)
 conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
 
 #up9 = Conv2D(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
 up9 = Conv2DTranspose(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
-merge9 = concatenate([conv1,up9], axis = 3)
-conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+#up9 = Conv2DTranspose(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
+#merge9 = concatenate([conv1,up9], axis = 3)
+merge9 = concatenate([conv1,up9])
+drop9 = Dropout(0.25)(merge9)
+#conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop9)
 conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-#conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-conv9 = Conv2D(3, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+##conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+#conv9 = Conv2D(3, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
 
 # Input shape: 4D tensor with shape: (samples, channels, rows, cols)
 # Output shape: 4D tensor with shape: (samples, filters, new_rows, new_cols) 
@@ -249,8 +313,9 @@ monitor_type = 'loss'
 #model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
 
 #model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coeff, metrics = ['accuracy'])
-model.compile(optimizer = Adam(lr = 1e-4), loss = dice_coeff, metrics = ['accuracy'])
-
+#model.compile(optimizer = Adam(lr = 1e-4), loss = dice_coeff_inverted, metrics = [dice_coeff])
+#model.compile(optimizer = Adam(lr = 1e-4), loss = dice_loss_2, metrics = [inverted_dice_2])
+model.compile(optimizer = Adam(lr = 0.01), loss = dice_loss_6, metrics = [inverted_dice_6])
 
 print("++++++++++++++")
 print(model.count_params())
@@ -267,7 +332,7 @@ EARLYSTOP = EarlyStopping(patience=50,
                           restore_best_weights=True)
 
 # Save off the very best model we can find; avoids overfitting.
-CHKPT = ModelCheckpoint(out_path + 'best_model_incremental.h5', 
+CHKPT = ModelCheckpoint(out_path + 'best_model_incremental_A.h5', 
                      monitor=monitor_type, 
                      mode='min', 
                      verbose=1, 
@@ -293,6 +358,6 @@ history = model.fit_generator(batch_gen,
 
 #model.save_weights(out_path + 'last_weights.h5') 
 
-model.save(out_path + 'last_weights.h5') 
+model.save(out_path + 'last_weights_A.h5') 
 
 print("Done")
