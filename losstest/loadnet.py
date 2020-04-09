@@ -18,19 +18,35 @@ import matplotlib.pyplot as plt
 def combine_generator(gen1, gen2):
 	while True:
     		yield(gen1.next(), gen2.next())
-# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
-def dice_coeff(y_true, y_pred):
-	smooth = 1.
-	y_true_f = keras.flatten(y_true)
-	y_pred_f = keras.flatten(y_pred)
-	intersection = keras.sum(y_true_f * y_pred_f)
-	return 1 - (2. * intersection + smooth) / (keras.sum(y_true_f) + keras.sum(y_pred_f) + smooth)
-# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class
-def iou_coeff(y_true, y_pred, smooth=1):
-  intersection = keras.sum(keras.abs(y_true * y_pred), axis=[1,2,3])
-  union = keras.sum(y_true,[1,2,3])+keras.sum(y_pred,[1,2,3])-intersection
-  iou = keras.mean((intersection + smooth) / (union + smooth), axis=0)
-  return iou
+
+def dice_coeff_inverted(y_true, y_pred, smooth=1e-7):
+    return (1 - dice_coeff(y_true, y_pred, smooth))
+
+
+# https://stackoverflow.com/questions/53248099/keras-image-segmentation-using-grayscale-masks-and-imagedatagenerator-class 
+# https://github.com/keras-team/keras/issues/3611                                                                                                                                                          def 
+#dice_coeff(y_true, y_pred):
+def dice_coeff(y_true, y_pred, smooth=1e-7): 
+    intersection = keras.sum(y_true * y_pred, axis=[1,2,3])
+    union = keras.sum(y_true, axis=[1,2,3]) + keras.sum(y_pred, axis=[1,2,3])
+    return keras.mean( (2. * intersection + smooth) / (union + smooth), axis=0)    
+
+def dice_loss_2(y_true, y_pred):
+    numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2,3))
+    denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2,3))
+    return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
+
+def inverted_dice_2(y_true, y_pred):
+    return 1 - dice_loss_2(y_true, y_pred)
+
+def dice_loss_6(y_true, y_pred):
+    numerator = 2 * tf.reduce_sum(y_true * y_pred, axis=(1,2))
+    denominator = tf.reduce_sum(y_true + y_pred, axis=(1,2))
+    return tf.reshape(1 - numerator / denominator, (-1, 1, 1))
+
+def inverted_dice_6(y_true, y_pred):
+    return 1 - dice_loss_6(y_true, y_pred)
+
 
 
     	
@@ -94,7 +110,9 @@ prevmodelfile = 'best_model_incremental.h5'
 print(' Loading model: ' + prevmodelfile)
 #model = load_model(prevmodelfile)
 #model = load_model(prevmodelfile, custom_objects={'iou_coeff': iou_coeff})
-model = load_model(prevmodelfile, custom_objects={'dice_coeff': dice_coeff})
+#model = load_model(prevmodelfile, custom_objects={'dice_coeff': dice_coeff, 'dice_coeff_inverted': dice_coeff_inverted})
+#model = load_model(prevmodelfile, custom_objects={'dice_loss_2': dice_loss_2, 'inverted_dice_2': inverted_dice_2})
+model = load_model(prevmodelfile, custom_objects={'dice_loss_6': dice_loss_6, 'inverted_dice_6': inverted_dice_6})
 print("++++++++++++++")
 print(model.count_params())
 print("++++++++++++++")
