@@ -21,6 +21,9 @@ sudo mkdir /worksite/mask/
 sudo mkdir /worksite/maskvalidate/
 sudo mkdir /outgoing/
 
+# Mount the requested extra HD space as the outgoing directory
+sudo /usr/local/etc/emulab/mkextrafs.pl /outgoing
+
 sudo chmod 777 /worksite
 sudo chmod 777 /worksite/fundus
 sudo chmod 777 /worksite/fundusvalidate
