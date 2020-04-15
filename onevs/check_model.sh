@@ -11,4 +11,5 @@ echo "onevsmany_unhot.py"
 python3 onevsmany_unhot.py
 echo "onevsmany_color_predicted.py"
 python3 onevsmany_color_predicted.py
-echo "DONE"
+
+echo "DONE: $1"
