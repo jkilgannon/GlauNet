@@ -209,7 +209,6 @@ for imagenum in range(174, 337):
         cropped_mask = finished_mask_image.crop((left_point, top_point, left_point + img_crop_size, top_point + img_crop_size))
         #cropped_mask.save(out_path_mask + 'image' + str(imagenum) + 'prime.bmp')
         
-        # NOTE: Will need to rename the numpy array with the extension .tif for parallelism with the name of the fundus images (not any more!)
         mask_array = np.asarray(cropped_mask)
         
         # Save off a mask file for each class, in which the class's pixels are 
@@ -232,4 +231,3 @@ for imagenum in range(174, 337):
         
 
 print("done")
-
