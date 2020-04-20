@@ -6,7 +6,6 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
-#from tensorflow.keras import backend as keras
 from tensorflow.keras import backend as K
 import os
 import numpy as np
