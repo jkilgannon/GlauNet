@@ -36,9 +36,9 @@ path_mask_val = '/worksite/maskvalidate' + str(class_active) + '/'
 out_path = '/outgoing/'
 #batchsize = 3
 batchsize = 1
-#input_size = (960, 1440, 3)
+input_size = (960, 1440, 3)
 #input_size = (320, 480, 3)
-input_size = (160, 160, 3)
+#input_size = (160, 160, 3)
 
 #sess = tf.Session()
 
