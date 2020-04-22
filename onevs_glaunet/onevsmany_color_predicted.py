@@ -29,7 +29,7 @@ for x in range(input_shape[0]):
 img_file = Image.fromarray(img)
 img_file.save('predicted.png')
 
-print("Found " + str(equals1) + " instance of the class with confidence 1.0")
+print("Found " + str(equals1) + " instance(s) of the class with confidence 1.0")
 
 ##
 
@@ -48,7 +48,7 @@ for x in range(input_shape[0]):
 img_file = Image.fromarray(img)
 img_file.save('predicted_0.00000001.png')
 
-print("Found " + str(gtzero) + " instance of the class with confidence greater than 0.00000001")
+print("Found " + str(gtzero) + " instance(s) of the class with confidence greater than 0.00000001")
 
 ##
 
