@@ -47,6 +47,9 @@ print("smoothing factor: " + str(smoothing_factor))
 # We'll append this to the saved weights so we can run more than one
 #   version of this code at once
 run_number = randint(1, 10000000)
+print("==================================")
+print("run number: " + str(run_number))
+print("==================================")
 
 neuron_default = 64
 
