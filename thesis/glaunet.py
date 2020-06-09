@@ -260,11 +260,15 @@ def main():
     # Save off the very best model we can find; avoids overfitting.
     #best_model_loc = out_path + 'best_model_incremental_{epoch:02d}_' + str(run_number) + '.h5'
     best_model_loc = out_path + 'best_model_incremental-cls'+ str(class_active) + '-run' + str(run_number) + '.h5'
+    #CHKPT = ModelCheckpoint(best_model_loc, 
+    #                     monitor=monitor_type, 
+    #                     mode='min', 
+    #                     verbose=1)
     CHKPT = ModelCheckpoint(best_model_loc, 
                          monitor=monitor_type, 
                          mode='min', 
+                         save_weights_only = False,
                          verbose=1)
-
 
     # Set up the batch generator
     batch_gen = batchmaker(path_fundus, 
@@ -284,8 +288,10 @@ def main():
                         callbacks=[EARLYSTOP, CHKPT])
 
     # Save the final model
-    final_model_loc = out_path + 'last_weights_-cls'+ str(class_active) + '-run' + str(run_number) + '.h5'
-    model.save(final_model_loc)
+    #final_model_loc = out_path + 'last_weights_-cls'+ str(class_active) + '-run' + str(run_number) + '.h5'
+    #model.save(final_model_loc)
+    final_model_loc = out_path + 'final_model_-cls'+ str(class_active) + '-run' + str(run_number) + '.tf'
+    model.save(final_model_loc, save_format='tf')
 
     print("Done")
 
