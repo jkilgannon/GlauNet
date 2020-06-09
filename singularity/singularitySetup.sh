@@ -61,7 +61,7 @@ sudo cp /local/repository/trimmed_imgs/maskvalidate2/* /worksite/maskvalidate2/
 #sudo cp /local/repository/nn/* /users/jk880380/
 sudo cp /local/repository/thesis/* /users/jk880380/
 
-cp /worksite/fundus/image333* /users/jk880380/test.tif
+sudo cp /worksite/fundus/image333* /users/jk880380/test.tif
 
 sudo chmod 777 /worksite/fundus/*
 sudo chmod 777 /worksite/fundusvalidate/*
