@@ -19,13 +19,8 @@ from tensorflow.keras.utils import normalize
 
 # Previous version(s): nn/onevsmany_LR_WORKING_glaunet.py
 
-#tf.executing_eagerly()
-#print(tf.__version__)
-
 num_fl = 130
 num_fl_val = 32
-#num_fl = 104
-#num_fl_val = 26
 
 # Which class are we training this time?
 class_active = 1
@@ -40,8 +35,6 @@ batchsize = 1
 #input_size = (960, 1440, 3)
 #input_size = (320, 480, 3)
 input_size = (160, 160, 3)
-
-#sess = tf.Session()
 
 smoothing_factor = float(input_size[0] * input_size[1])
 print("smoothing factor: " + str(smoothing_factor))
@@ -83,31 +76,6 @@ def custom_loss(y_true, y_pred):
 def soft_loss(y_true, y_pred):
     return 1 - custom_loss(y_true, y_pred)
 
-    #y_true_real = tf.dtypes.cast(y_true, tf.float64)
-    #y_pred_real = tf.dtypes.cast(y_pred, tf.float64)
-
-    #sum_ = tf.reduce_sum(y_true)
-    ##intersection = K.sum(K.abs(y_true_real * y_pred_real))
-    #return sum_
-
-    #sum_ = tf.reduce_sum(y_true_real, [0,1,2])
-    #return sum_
-
-    #diff = tf.reduce_sum(K.abs(y_true_real - y_pred_real))
-    #return diff
-
-    #y_pred_clipped = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
-    #intersection = tf.reduce_sum(K.abs(y_true * y_pred_clipped))
-    #return intersection
-
-    #y_pred_clipped = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
-    #return tf.reduce_sum(K.abs(y_pred - y_pred_clipped))
-
-    #y_true_rs = tf.reshape(y_true, (-1, input_size[0], input_size[1], 1))
-    #y_true_clipped = tf.clip_by_value(y_true_rs, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
-    #return tf.reduce_sum(K.abs(y_true_rs - y_true_clipped))
-
-
 
 # A Python generator that will give the fit_generator data in batches.
 def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
@@ -121,7 +89,6 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
     # Make a list of the file names. This will be the list for both dirs.
     files = os.listdir(raw_loc)
     file_size = len(files) - 1
-    #counter = 0
 
     # The infinite loop is part of how generators work.  The fit_generator needs to
     # always have data available, so we loop forever.
@@ -235,8 +202,6 @@ def main():
     #model.compile(optimizer = Adam(lr = 1e-4), loss = custom_loss, metrics = [soft_loss])
     #model.compile(optimizer = Adam(lr = 1e-2), loss = custom_loss, metrics = [soft_loss])
     #model.compile(optimizer = Adam(lr = 1e-3), loss = custom_loss, metrics = [soft_loss])
-    #learning_rate = 1e-4
-    #learning_rate = 5*1e-4
 
     learning_rate = 1e-5
     model.compile(optimizer = Adam(lr = learning_rate), loss = custom_loss, metrics = [soft_loss])
