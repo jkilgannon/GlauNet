@@ -25,6 +25,36 @@ if len(sys.argv) < 3:
     print('This program requires two command line arguments: run number (1..10000000), and class (0..2), in that order')
     sys.exit()
 
+print("==================================")
+print("arg 1: " + sys.argv[1])
+print("arg 2: " + sys.argv[2])
+print("==================================")
+
+# Which class are we training this time?
+class_active = int(sys.argv[2])
+if class_active < 0 or class_active > 2:
+    print('This program requires two command line arguments: run number (1..10000000), and class (0..2), in that order')
+    sys.exit()
+
+# We'll append this to the saved weights so we can run more than one
+#   version of this code at once
+run_number = int(sys.argv[1])
+if run_number < 1 or run_number > 10000000:
+    print('This program requires two command line arguments: run number (1..10000000), and class (0..2), in that order')
+    sys.exit()
+
+in_model_loc = 'best_model_incremental-cls'+ str(class_active) + '-run' + str(run_number) + '.h5'
+if not os.path.isfile(in_model_loc):
+    print('The file ' + best_model_loc + ' must exist in the directory with this executable.')
+    sys.exit()
+
+
+print("==================================")
+print("run number: " + str(run_number))
+print("class: " + str(class_active))
+print("==================================")
+
+
 num_fl = 130
 num_fl_val = 32
 
@@ -40,28 +70,9 @@ input_size = (160, 160, 3)
 
 neuron_default = 64
 
-# Which class are we training this time?
-class_active = int(sys.argv[2])
-if class_active < 0 or class_active > 2:
-    print('This program requires two command line arguments: run number (1..10000000), and class (0..2), in that order')
-    sys.exit()
-
-# We'll append this to the saved weights so we can run more than one
-#   version of this code at once
-run_number = int(sys.argv[1])
-if run_number < 1 or run_number > 10000000:
-    print('This program requires two command line arguments: run number (1..10000000), and class (0..2), in that order')
-    sys.exit()
-
 best_model_loc = out_path + 'best_model_incremental-cls'+ str(class_active) + '-run' + str(run_number) + '.h5'
-if not os.path.isfile(best_model_loc):
-    print('The file ' + best_model_loc + ' must exist in the directory with this executable.')
-    sys.exit()
 
-print("==================================")
-print("run number: " + str(run_number))
-print("class: " + str(class_active))
-print("==================================")
+
 
 #####################################
 
@@ -139,79 +150,15 @@ def batchmaker(raw_loc, annotated_loc, batchsize, input_size):
 def main():
     K.clear_session()
 
-    """
-    # UNet:
-    # https://github.com/zhixuhao/unet
-
-    input_layer = Input(input_size)
-
-    conv1 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(input_layer)
-    conv1 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
-    pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
-    drop1 = Dropout(0.25)(pool1)
-
-    conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop1)
-    conv2 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
-    pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
-    drop2 = Dropout(0.25)(pool2)
-
-    conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop2)
-    conv3 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
-    pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
-    drop3 = Dropout(0.25)(pool3)
-
-    conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop3)
-    conv4 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
-    pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
-    drop4 = Dropout(0.25)(pool4)
-
-    ## Center point
-    conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop4)
-    conv5 = Conv2D(neuron_default * 16, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
-    drop5 = Dropout(0.5)(conv5)
-
-    up6 = UpSampling2D(size = (2,2))(drop5)
-    up6 = Conv2DTranspose(neuron_default * 8, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up6)
-    merge6 = concatenate([conv4,up6])
-    drop6 = Dropout(0.25)(merge6)
-    conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop6)
-    conv6 = Conv2D(neuron_default * 8, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
-
-    up7 = Conv2DTranspose(neuron_default * 4, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
-    merge7 = concatenate([conv3,up7])
-    drop7 = Dropout(0.25)(merge7)
-    conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop7)
-    conv7 = Conv2D(neuron_default * 4, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
-
-    up8 = Conv2DTranspose(neuron_default * 2, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
-    merge8 = concatenate([conv2,up8])
-    drop8 = Dropout(0.25)(merge8)
-    conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop8)
-    conv8 = Conv2D(neuron_default * 2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
-
-    up9 = Conv2DTranspose(neuron_default, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
-    merge9 = concatenate([conv1,up9])
-    drop9 = Dropout(0.25)(merge9)
-    conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(drop9)
-    conv9 = Conv2D(neuron_default, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-
-    # Input shape: 4D tensor with shape: (samples, channels, rows, cols)
-    # Output shape: 4D tensor with shape: (samples, filters, new_rows, new_cols) 
-    #   if data_format='channels_first' or 4D tensor with shape: (samples, new_rows, new_cols, filters) 
-    #   if data_format='channels_last'. rows and cols values might have changed due to padding.
-    conv10 = Conv2D(1, 1, activation = 'sigmoid')(conv9)
-    """
-
-    model = Model(inputs = input_layer, outputs = conv10)
-
     monitor_type = 'loss'
     loss = custom_loss
 
     #learning_rate = 1e-5
     #model.compile(optimizer = Adam(lr = learning_rate), loss = custom_loss, metrics = [soft_loss])
 
-    model = tf.keras.models.load_model('my_model.h5')
-
+    model = tf.keras.models.load_model(in_model_loc,
+           custom_objects={'soft_loss': soft_loss, 'custom_loss': custom_loss})
+           
     print("++++++++++++++")
     print(model.count_params())
     print("++++++++++++++")
@@ -221,7 +168,6 @@ def main():
     print("++++++++++++++")
     os.system('vmstat -s')
     print("++++++++++++++")
-
 
     EARLYSTOP = EarlyStopping(patience=50, 
                               monitor=monitor_type, 
