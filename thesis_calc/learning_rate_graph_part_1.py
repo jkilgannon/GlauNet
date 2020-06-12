@@ -19,7 +19,7 @@ def epoch_num_from_file_name(x):
 print("Started.")
 
 # How many epochs will we graph?
-max_epoch = 70
+max_epoch = 250
 
 # This is the class that the model was used to predict, on Cloudlab.
 class_processed = 1
@@ -44,7 +44,9 @@ incorrectness_for_LRs = []
 aggregate_correctness_for_LRs = []
 
 # This is the learning rate being worked on.
-all_learning_rates = ['2', '3', '4', '5', '5x6' , '6', '7']
+all_learning_rates = ['5', '5x6' , '6', '7']
+#all_learning_rates = ['2', '3', '4', '5', '5x6' , '6', '7']
+
 for learning_rate in all_learning_rates:
     # The directory containing the images predicted by the model as run on Cloudlab
     predicted_loc = base_loc + "predicted-lr" + str(learning_rate) + "\\"
@@ -116,16 +118,56 @@ for learning_rate in all_learning_rates:
 # Y-axis: the learning rates.  
 # One of the learning rates is fractional (5 * 10e-6); give it a 
 # representation on a log-10 scale.  log_10(5*10e-6) = 5.301
-LRs = np.array([2, 3, 4, 5, 5.3, 6, 7])
+LRs = np.array([5, 5.3, 6, 7])
+#LRs = np.array([2, 3, 4, 5, 5.3, 6, 7])
 
 # X-axis: the epochs
 epochs = np.array(list(range(1,max_epoch+1)))
 
 (x, y) = np.meshgrid(epochs, LRs)
 
-# ******************* GRAPH BOTH THE CORRECTNESS AND  INCORRECTNESS DATA! *********************************************
-#z = np.array(correctness_for_LRs)
-#z = np.array(incorrectness_for_LRs)
+#####
+
+z = np.array(correctness_for_LRs)
+
+# Make a 3D display
+fig = plt.figure(num=1, clear=True)
+ax = fig.add_subplot(1, 1, 1, projection='3d')   
+
+# Plot the data on it.
+ax.plot_surface(x, y, z)
+
+ax.set(xlabel='Epoch', ylabel='-log_10(Learning Rate)', zlabel='Correct Pixels', title='Correctness by Learning Rate and Epoch')
+
+fig.tight_layout()
+
+# Show the graph!
+plt.show()
+
+input("Press Enter to continue and show the Incorrect Pixels graph...")
+
+#####
+
+z = np.array(incorrectness_for_LRs)
+
+# Make a 3D display
+fig = plt.figure(num=1, clear=True)
+ax = fig.add_subplot(1, 1, 1, projection='3d')   
+
+# Plot the data on it.
+ax.plot_surface(x, y, z)
+
+ax.set(xlabel='Epoch', ylabel='-log_10(Learning Rate)', zlabel='Incorrect Pixels', title='Incorrectness by Learning Rate and Epoch')
+
+fig.tight_layout()
+
+# Show the graph!
+plt.show()
+
+input("Press Enter to continue and show the Aggregate Correct Pixels graph...")
+
+#####
+
 z = np.array(aggregate_correctness_for_LRs)
 
 # Make a 3D display
@@ -135,8 +177,6 @@ ax = fig.add_subplot(1, 1, 1, projection='3d')
 # Plot the data on it.
 ax.plot_surface(x, y, z)
 
-#ax.set(xlabel='Epoch', ylabel='-log_10(Learning Rate)', zlabel='Correct Pixels', title='Correctness by Learning Rate and Epoch')
-#ax.set(xlabel='Epoch', ylabel='-log_10(Learning Rate)', zlabel='Incorrect Pixels', title='Incorrectness by Learning Rate and Epoch')
 ax.set(xlabel='Epoch', ylabel='-log_10(Learning Rate)', zlabel='Aggregate Correct Pixels', title='Aggregate Correctness by Learning Rate and Epoch')
 
 fig.tight_layout()
@@ -144,5 +184,6 @@ fig.tight_layout()
 # Show the graph!
 plt.show()
 
+#####
     
 print("Done.")
