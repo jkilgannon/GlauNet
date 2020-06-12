@@ -140,7 +140,6 @@ ax.plot_surface(x, y, z)
 ax.set(xlabel='Epoch', ylabel='-log_10(Learning Rate)', zlabel='Aggregate Correct Pixels', title='Aggregate Correctness by Learning Rate and Epoch')
 
 fig.tight_layout()
-#fig.savefig('PatchExOrig_py.png')
 
 # Show the graph!
 plt.show()
