@@ -55,24 +55,50 @@ print("class: " + str(class_active))
 print("==================================")
 
 
-num_fl = 130
-num_fl_val = 32
+#num_fl = 130
+#num_fl_val = 32
 
-path_fundus = '/worksite/fundus/'
-path_fundus_val = '/worksite/fundusvalidate/'
-path_mask = '/worksite/mask' + str(class_active) + '/'
-path_mask_val = '/worksite/maskvalidate' + str(class_active) + '/'
+# Change this to a number between 1 and 6.
+annotator_num = 8
+
+path_fundus = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/fundus/'
+path_fundus_val = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/fundusvalidate/'
+path_mask = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/mask' + str(class_active) + '/'
+path_mask_val = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/maskvalidate' + str(class_active) + '/'
+#path_fundus = '/worksite/fundus/'
+#path_fundus_val = '/worksite/fundusvalidate/'
+#path_mask = '/worksite/mask' + str(class_active) + '/'
+#path_mask_val = '/worksite/maskvalidate' + str(class_active) + '/'
 out_path = '/outgoing/'
 batchsize = 1
 #input_size = (960, 1440, 3)
 #input_size = (320, 480, 3)
 input_size = (160, 160, 3)
 
+# Get the number of files in the training images (num_fl) and the
+# validation images (num_fl_val).
+batchpath, batchdirs, batchfiles = next(os.walk(path_fundus))
+num_fl = len(batchfiles)
+batchpath, batchdirs, batchfiles = next(os.walk(path_fundus_val))
+num_fl_val = len(batchfiles)
+
+# now check that there are the same number of ground truth and mask images
+batchpath, batchdirs, batchfiles = next(os.walk(path_mask))
+num_fl_mask = len(batchfiles)
+batchpath, batchdirs, batchfiles = next(os.walk(path_mask_val))
+num_fl_val_mask = len(batchfiles)
+
+if num_fl != num_fl_mask or num_fl_val != num_fl_val_mask:
+   print("Number of ground truth images does not match number of mask images. Exiting.")
+   sys.exit()
+
+print("Training/validation image counts")
+print(num_fl)
+print(num_fl_val)
+
 neuron_default = 64
 
 best_model_loc = out_path + 'best_model_incremental-cls'+ str(class_active) + '-run' + str(run_number) + '.h5'
-
-
 
 #####################################
 
