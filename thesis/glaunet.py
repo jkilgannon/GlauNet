@@ -19,8 +19,8 @@ from tensorflow.keras.utils import normalize
 
 # Previous version(s): nn/onevsmany_LR_WORKING_glaunet.py
 
-num_fl = 130
-num_fl_val = 32
+#num_fl = 130
+#num_fl_val = 32
 
 # Which class are we training this time?
 class_active = 1
@@ -36,8 +36,26 @@ batchsize = 1
 #input_size = (320, 480, 3)
 input_size = (160, 160, 3)
 
-smoothing_factor = float(input_size[0] * input_size[1])
-print("smoothing factor: " + str(smoothing_factor))
+# Get the number of files in the training images (num_fl) and the
+# validation images (num_fl_val).
+batchpath, batchdirs, batchfiles = next(os.walk(path_fundus))
+num_fl = len(batchfiles)
+batchpath, batchdirs, batchfiles = next(os.walk(path_fundus_val))
+num_fl_val = len(batchfiles)
+
+# now check that there are the same number of ground truth and mask images
+batchpath, batchdirs, batchfiles = next(os.walk(path_mask))
+num_fl_mask = len(batchfiles)
+batchpath, batchdirs, batchfiles = next(os.walk(path_mask_val))
+num_fl_val_mask = len(batchfiles)
+
+if num_fl != num_fl_mask or num_fl_val != num_fl_val_mask:
+   print("Number of ground truth images does not match number of mask images. Exiting.")
+   sys.exit()
+
+print("Training/validation image counts")
+print(num_fl)
+print(num_fl_val)
 
 # We'll append this to the saved weights so we can run more than one
 #   version of this code at once
@@ -194,18 +212,12 @@ def main():
 
     #model.compile(optimizer = Adam(lr = 1e-4), loss = loss_type, metrics = ['accuracy'])
     #model.compile(optimizer = Adam(lr = 1e-4), loss = 'cosine_similarity', metrics = ['accuracy'])
-
     #model.compile(optimizer = Adam(lr = 1e-4), loss = iou_coeff, metrics = ['accuracy'])
     #model.compile(optimizer = Adam(lr = 1e-4), loss = dice_coeff_inverted, metrics = [dice_coeff])
     #model.compile(optimizer = Adam(lr = 1e-4), loss = dice_loss_2, metrics = [inverted_dice_2])
 
-    #model.compile(optimizer = Adam(lr = 1e-4), loss = custom_loss, metrics = [soft_loss])
-    #model.compile(optimizer = Adam(lr = 1e-2), loss = custom_loss, metrics = [soft_loss])
-    #model.compile(optimizer = Adam(lr = 1e-3), loss = custom_loss, metrics = [soft_loss])
-
     learning_rate = 1e-5
     model.compile(optimizer = Adam(lr = learning_rate), loss = custom_loss, metrics = [soft_loss])
-
 
     print("++++++++++++++")
     print(model.count_params())
