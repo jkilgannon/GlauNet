@@ -19,16 +19,22 @@ from tensorflow.keras.utils import normalize
 
 # Previous version(s): nn/onevsmany_LR_WORKING_glaunet.py
 
-#num_fl = 130
-#num_fl_val = 32
-
 # Which class are we training this time?
 class_active = 1
 
-path_fundus = '/worksite/fundus/'
-path_fundus_val = '/worksite/fundusvalidate/'
-path_mask = '/worksite/mask' + str(class_active) + '/'
-path_mask_val = '/worksite/maskvalidate' + str(class_active) + '/'
+# Change this to a number between 1 and 6.
+annotator_num = 8
+
+path_fundus = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/fundus/'
+path_fundus_val = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/fundusvalidate/'
+path_mask = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/mask' + str(class_active) + '/'
+path_mask_val = '/local/repository/training_data/other_annotators/' + str(annotator_num) + '/maskvalidate' + str(class_active) + '/'
+
+#path_fundus = '/worksite/fundus/'
+#path_fundus_val = '/worksite/fundusvalidate/'
+#path_mask = '/worksite/mask' + str(class_active) + '/'
+#path_mask_val = '/worksite/maskvalidate' + str(class_active) + '/'
+
 out_path = '/outgoing/'
 #batchsize = 3
 batchsize = 1
