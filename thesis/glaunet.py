@@ -78,6 +78,7 @@ def custom_loss(y_true, y_pred):
     # y_true: ground truth.  y_pred: predictions
     #
     # This version uses the Jaccard loss (IOU) described in https://arxiv.org/pdf/1801.05746.pdf
+    # Our output is 100 * the involution of the Jaccard loss [1 - (1 - x)) == x], thus it's an involution.
 
     #y_true_real = tf.dtypes.cast(y_true, tf.float64)
     #y_pred_real = tf.dtypes.cast(y_pred, tf.float64)
