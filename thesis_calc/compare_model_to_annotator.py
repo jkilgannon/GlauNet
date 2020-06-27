@@ -60,6 +60,7 @@ path_fundus = './'
 path_mask = './model_compare/mask/'
 out_path = '/outgoing/'
 input_size = (160, 160, 3)
+preferred_size = (160, 160)
 
 
 """
@@ -170,19 +171,96 @@ def main():
         # end of stackoverflow
         
         predicted = model.predict(images)
+        print("predicted.shape: " + str(predicted.shape))
+        predicted_reshape = np.reshape(predicted, preferred_size)
+        print("predicted_reshape.shape: " + str(predicted_reshape.shape))
         
         ###
         
+        """
         # Get an array of n x m instead of the 1 x n x m x 1 of a predicted image
         # This adds the three layers of color together into one layer.
-        # Note that x and y are transposed so this is now an m x n array! <<<<<<
+        #
+        # **** Note that x and y are transposed so this is now an m x n array! <<<<<< ***
         predicted = predicted.sum(-1)
+        """
+        
+        # Get the location of the top and bottom extremes of the outer circle.
+        current_row = 0
+        found_top = False
+        found_bottom = False
+        for row in predicted_reshape:
+            row_sum = sum(row)
+            if not found_top and row_sum > 2:
+                # Ignore rows with up to 2 pixels, to cut down on errant clutter 
+                # giving incorrect answers.  If we find enough pixels, we found
+                # the top of the mask, so stop.
+                found_top = True
+                top_point = current_row
+            
+            if found_top and row_sum <= 3:
+                found_bottom = True
+                bottom_point = current_row
 
+            if found_bottom and found_top:
+                # Don't waste effort
+                break
+
+            current_row = current_row + 1
+
+        # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        
+        # Get the location of the left and right extremes of the outer circle.
+        for x in range(160):
+            col_sum = 0
+            for y in range(160):
+                col_sum = col_sum + predicted_reshape[x,y]
+            if col_sum > 2:
+                left_point = x
+                break
+        
+        for x in range(159, left_point, -1):
+            col_sum = 0
+            for y in range(160):
+                col_sum = col_sum + predicted_reshape[x,y]
+            if col_sum > 2:
+                right_point = x
+                break
+
+        
+        
+        """
+        predicted_flip = np.transpose(predicted_reshape)
+        current_col = 0
+        found_left = False
+        found_right = False
+        for col in predicted_flip:
+            col_sum = sum(col)
+            print(col)
+            if not found_left and col_sum > 2:
+                # Ignore columns with up to 2 pixels, to cut down on errant clutter 
+                # giving incorrect answers.  If we find enough pixels, we found
+                # the top of the mask, so stop.
+                found_left = True
+                left_point = current_col
+            
+            if found_left and col_sum <= 3:
+                found_right = True
+                right_point = current_col
+
+            if found_right and found_left:
+                # Don't waste effort
+                break
+
+            current_row = current_row + 1
+        """        
+        
+        """
         # Get the location of the top and bottom extremes of the outer circle.
         top_point = 0
         for row in predicted[0]:
             tmp = list(map(lambda x: x > 0.0, row))
-            print(tmp)
+            #print(tmp)
             if any(tmp):
                 # One of the elements in the row is not zero, so it's the top of the mask
                 break
@@ -198,6 +276,7 @@ def main():
                 # One of the elements in the row is not zero, so it's the bottom of the mask
                 break        
             bottom_point =- 1 
+        """
             
         """            
         # Get the location of the top and bottom extremes of the outer circle.
@@ -226,7 +305,7 @@ def main():
         #    for y in range(len(predicted[0,0])):
                 
         
-        
+        """
         # Get the location of the top and bottom extremes of the outer circle.        
         top_point = 0
         bottom_point = 0
@@ -235,7 +314,7 @@ def main():
 
         for row in predicted[0]:
             tmp = list(map(lambda x: x > 0.0, row))
-            print(tmp)
+            #print(tmp)
             if any(tmp) and not top_found:
                 # One of the elements in the row is not zero, so it's the top o$
                 top_point = row_num
@@ -259,7 +338,7 @@ def main():
                 if predicted[0,x,y] > 0.0:
                     # Found the right edge of the mask
                     right_point = y
-                    
+        """
         
         
         #map(lambda x: x > 0.0, row)
@@ -300,20 +379,112 @@ def main():
         #print(predicted[0])
         #print('==========================')
     
+    
+        print(predicted.shape)
         print(top_point)
         print(bottom_point)
         print(left_point)
         print(right_point)
+        print("(" + str(right_point) + "," + str(bottom_point) + ")")
         print("------------------------")
         
+        disc_top_point = top_point
+        disc_bottom_point = bottom_point
+        disc_left_point = left_point
+        disc_right_point = right_point
+        
+        disc_length = disc_bottom_point - disc_top_point
+        disc_width = disc_right_point- disc_left_point
+        
         # Get the optic cup, which is an inner circle.
-
-        center_point = (round((bottom_point - top_point)/2, 0), round((bottom_point - top_point)/2, 0))
+        center_point = (int(round((bottom_point - top_point)/2, 0)), int(round((bottom_point - top_point)/2, 0)))
         
-        # First, "paint out" the background class.
-        cup_predicted = copy.deepcopy(predicted[0])
+        print(center_point)
+        print(center_point[0])
+        print(center_point[1])
         
+        
+        ## First, "paint out" the background class.
+        #cup_predicted = copy.deepcopy(predicted[0])
+        
+        # Go looking for the top of the optic cup.  Look first to
+        # the left of the center line of the optic disc, then
+        # to the right.
+        
+        # Find the top of the optic cup on the disc's center line.
+        for y in range(center_point[1], disc_top_point, -1):
+            #print("y:" + str(y) + ", " + str(predicted[0,center_point[0],y]))
+            if predicted[0,center_point[0],y] > 0.0:
+                # Found the local top of the cup.
+                local_cup_top = y
+                break
+        
+        print("local_cup_top: " + str(local_cup_top))
+        
+        # See if the top of the cup is to the left of the disc's
+        # center line
+        half_range = round((disc_width / 4), 0)
+        end_found = False
+        current_x = center_point[0]
+        current_y = local_cup_top
+        while not end_found:
+            current_x = current_x - 1
+            if predicted[0,current_x,current_y] > 0.0 and predicted[0,current_x,current_y-1] > 0.0:
+                # Current "view window" is inside the mask for class 1, so it's not in the cup
+                end_found = True
+                break
+            while predicted[0,current_x,current_y] == 0.0 and predicted[0,current_x,current_y-1] == 0.0:
+                # While we are still not in class 1 )and tehrefore are in the disc), move upward
+                current_y = current_y - 1
+                if local_cup_top > current_y:
+                    local_cup_top = current_y
+            if current_y - 1 == disc_top_point or predicted[0,current_x,current_y-1] == 0.0:
+                end_found = True
 
+        cup_top_point = current_y
+        
+        print("cup_top_point: " + str(cup_top_point))
+
+
+        # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        """
+        for y in range(local_cup_top, local_cup_top-6, -1):
+            for x in range(center_point[0] - half_range, center_point[0] + half_range + 1):
+                
+            
+            # Start at center point, look upwards.
+            temp_top = y
+            if predicted[0,x,y] > 0.0:
+                # Found the top edge of the cup class.
+    
+                half_range = round((disc_width / 4), 0)
+                for x_prime in range(x-half_range, x+half_range):
+                    for y_prime in range(y, y - 6):
+                        if y_prime > temp_top and predicted[0,x_prime,y_prime] > 0.0:
+                            temp_top = y_prime
+                
+                break
+
+        cup_top_point = y_prime
+        
+        for y in range(center_point[1], len(predicted[0])):
+            # Start at center point, look upwards.
+            temp_bottom = y
+            if predicted[0,x,y] > 0.0:
+                # Found the top edge of the cup class.
+                half_range = round((disc_width / 4), 0)
+                for x_prime in range(x-half_range, x+half_range):
+                    for y_prime in range(y, y + 6):
+                        if y_prime > temp_top and predicted[0,x_prime,y_prime] > 0.0:
+                            temp_bottom = y_prime
+                
+                break
+        
+        """
+
+        cup_bottom_point = 5
+        
+        cup_length = cup_bottom_point - cup_top_point
         
         
         ############
@@ -321,7 +492,7 @@ def main():
 
         input_shape=(160,160)
         
-        predicted = np.reshape(predicted, input_shape)
+        predicted2 = np.reshape(predicted, input_shape)
         img = np.zeros((input_shape[0], input_shape[1], 3), dtype=np.uint8)
         
         empty_color= [255,255,255]   # white; used for the "not the right class" color.
@@ -329,13 +500,28 @@ def main():
         
         for x in range(input_shape[0]):
             for y in range(input_shape[1]):
-                if predicted[x,y] == 1:
+                if predicted2[x,y] == 1.0:
                     img[x,y] = class_color
                 else:
                     img[x,y] = empty_color
         img_file = Image.fromarray(img)
         
         img_file.save("predicted_" + "temp" + ".png")
+
+
+        img = np.zeros((input_shape[0], input_shape[1], 3), dtype=np.uint8)
+        
+        for x in range(input_shape[0]):
+            for y in range(input_shape[1]):
+                if predicted[0,x,y] == 1.0:
+                    img[x,y] = class_color
+                else:
+                    img[x,y] = empty_color
+        img_file = Image.fromarray(img)
+        
+        img_file.save("predicted_" + "temp_noresize" + ".png")
+        
+        print("PNGs saved off")
 
 
 
