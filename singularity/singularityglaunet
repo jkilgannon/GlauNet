@@ -1,0 +1,57 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+# Build me using the command:
+#  sudo singularity build --writable tf.img singularityriga
+#
+# Put the Python program to train the network in the outgoing directory, and
+#  name it glaunet.py
+
+%setup
+    # Where the data will go
+    mkdir ${SINGULARITY_ROOTFS}/incoming || true
+
+    # Where the programs and models will go
+    mkdir ${SINGULARITY_ROOTFS}/worksite || true
+
+    # Where we can copy out data from the container to the host system.
+    # To do this, use the --bind flag when calling singularity.
+    mkdir ${SINGULARITY_ROOTFS}/outgoing || true
+
+
+%environment
+    #export PATH=$PATH:/usr/local/lib/python2.7/dist-packages    
+
+    # Makes some software happy.
+    export LC_ALL=C
+
+
+%files
+    ## The NN program
+    #riga.py /worksite
+
+%post
+    # Install software into the container
+    apt-get -y update
+    apt-get -y install wget python3 nano unzip
+    apt-get -y install python3-pip
+
+    # Install TensorFlow via pip
+    pip3 install tensorflow
+    pip3 install pillow
+    pip3 install SciPy
+    pip3 install matplotlib
+    pip3 install numpy
+
+%runscript
+    # This will run when you call "singularity run" with this script as the argument.
+    echo "Startup: Containerized TensorFlow."
+    echo "Processing files."
+
+    # Run the neural network.
+    python3 /worksite/glaunet_predict.py
+
+    echo "Task complete.  Files processed."
+
+%labels
+    Author JonKilgannon
