@@ -4,8 +4,8 @@ set -x
 
 # Make directories
 sudo mkdir /worksite
-sudo mkdir /incoming/
-sudo mkdir /outgoing/
+sudo mkdir /incoming
+sudo mkdir /outgoing
 
 # Copy files
 sudo cp /local/repository/thesis/* /users/jk880380/
