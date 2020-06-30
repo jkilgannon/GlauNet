@@ -14,6 +14,9 @@ sudo cp /worksite/fundus/image333* /incoming/test_333.tif
 
 # Update permissions
 sudo chmod 777 /users/jk880380/* || true
+sudo chmod 777 /incoming || true
+sudo chmod 777 /outgoing || true
+sudo chmod 777 /worksite || true
 sudo chmod 777 /incoming/* || true
 sudo chmod 777 /outgoing/* || true
 sudo chmod 777 /worksite/* || true
