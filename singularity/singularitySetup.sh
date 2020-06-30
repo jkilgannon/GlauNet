@@ -26,6 +26,7 @@ sudo apt-get -y update
 sudo apt-get -y install wget python3 nano unzip
 sudo apt-get -y install python3-pip
 #sudo apt-get -y install singularity
+sudo apt install -y singularity-container
 
 ## Install TensorFlow via pip
 #sudo pip3 install tensorflow
