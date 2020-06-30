@@ -49,6 +49,7 @@ sudo chmod 777 /outgoing
 #sudo cp /local/repository/trimmed_imgs/maskvalidate2/* /worksite/maskvalidate2/
 
 sudo cp /local/repository/thesis/* /users/jk880380/
+sudo cp /local/repository/thesis/glaunet_predict.py /worksite/
 
 #sudo cp /worksite/fundus/image333* /users/jk880380/test.tif
 sudo cp /worksite/fundus/image333* /incoming/test_333.tif
