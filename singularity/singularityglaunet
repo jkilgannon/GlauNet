@@ -2,10 +2,10 @@ Bootstrap: docker
 From: ubuntu:18.04
 
 # Build me using the command:
-#  sudo singularity build --writable tf.img singularityriga
+#  sudo singularity build --writable gn.img singularityglaunet
 #
-# Put the Python program to train the network in the outgoing directory, and
-#  name it glaunet.py
+# Put the Python program to train the network in the worksite directory, and
+#  name it glaunet_predict.py
 
 %setup
     # Where the data will go
@@ -41,7 +41,7 @@ From: ubuntu:18.04
     pip3 install pillow
     pip3 install SciPy
     pip3 install matplotlib
-    pip3 install numpy
+    #pip3 install numpy
 
 %runscript
     # This will run when you call "singularity run" with this script as the argument.
