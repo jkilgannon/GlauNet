@@ -36,7 +36,7 @@ sudo chmod 777 /worksite
 #sudo chmod 777 /worksite/maskvalidate1
 #sudo chmod 777 /worksite/mask2
 #sudo chmod 777 /worksite/maskvalidate2
-sudo chmod 777 /incoming
+##sudo chmod 777 /incoming
 sudo chmod 777 /outgoing
 
 # Copy files
