@@ -28,19 +28,13 @@ request.addTour(tour)
 
 prefixForIP = "192.168.1."
 
-#link = request.LAN("lan")
-
 node = request.XenVM("glaunet1")
 
 node.cores = params.corecount
 node.ram = params.ramsize
 node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU18-64-STD"
 
-#iface = node.addInterface("if1")
-#iface.component_id = "eth1"
-#iface.addAddress(pg.IPv4Address(prefixForIP + "1", "255.255.255.0"))
 node.routable_control_ip = "true" 
-#link.addInterface(iface)  
 
 # Set scripts in the repository executable and readable.
 node.addService(pg.Execute(shell="sh", command="sudo find /local/repository/ -type f -iname \"*.sh\" -exec chmod 755 {} \;"))
