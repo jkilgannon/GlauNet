@@ -90,7 +90,7 @@ for idx in range(3):
     print("Lowest ratio, class " + str(idx) + ": " + str(lowest_class_ratio[idx]))
     print("Highest ratio, class " + str(idx) + ": " + str(highest_class_ratio[idx]))
     print("Average ratio, class " + str(idx) + ": " + str(total_class_ratio[idx] / float(len(all_class_data))))
-    print("Lowest pixel ratio, class " + str(idx) + ": " + str(lowest_class_count[idx]))
+    print("Lowest pixel count, class " + str(idx) + ": " + str(lowest_class_count[idx]))
     print("Highest pixel count, class " + str(idx) + ": " + str(highest_class_count[idx]))
     
 print("------")
