@@ -33,6 +33,10 @@ all_class_data = []
 # Count of total number of pixels in each class, among all files.
 total_class_pixel_count = [0,0,0]
 
+# Image size
+img_x = 0
+img_y = 0
+
 for f in files:
     target = annotated_loc + f
     print(target)
@@ -41,6 +45,9 @@ for f in files:
     # The classes are 0, 1, and 2, which lend themselves nicely to using a simple list as the data type
     # The last element will contain the file name.
     classes = [0, 0, 0, f]
+    
+    img_x = len(np_data[0])
+    img_y = len(np_data)
     
     for x in range(len(np_data)):
         for y in range(len(np_data[0])):
@@ -98,10 +105,10 @@ for idx in range(3):
     print("Highest ratio, class " + str(idx) + ": " + str(highest_class_ratio[idx]))
     print("Average ratio, class " + str(idx) + ": " + str(total_class_ratio[idx] / float(len(all_class_data))))
     print("Lowest pixel count, class " + str(idx) + ": " + str(lowest_class_count[idx]))
-    print("Lowest pixel ratio, class " + str(idx) + ": " + str(lowest_class_count[idx] / float(160*160)))
+    print("Lowest pixel ratio, class " + str(idx) + ": " + str(lowest_class_count[idx] / float(img_x*img_y)))
     print("Lowest pixel count, class " + str(idx) +  " is in file: " + min_file[idx])
     print("Highest pixel count, class " + str(idx) + ": " + str(highest_class_count[idx]))
-    print("Highest pixel ratio, class " + str(idx) + ": " + str(highest_class_count[idx] / float(160*160)))
+    print("Highest pixel ratio, class " + str(idx) + ": " + str(highest_class_count[idx] / float(img_x*img_y)))
     print("Highest pixel count, class " + str(idx) +  " is in file: " + max_file[idx])
     
     
