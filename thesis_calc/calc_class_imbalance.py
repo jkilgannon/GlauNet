@@ -39,7 +39,8 @@ for f in files:
     np_data = np.load(target)
     
     # The classes are 0, 1, and 2, which lend themselves nicely to using a simple list as the data type
-    classes = [0,0,0]
+    # The last element will contain the file name.
+    classes = [0, 0, 0, f]
     
     for x in range(len(np_data)):
         for y in range(len(np_data[0])):
@@ -58,6 +59,10 @@ lowest_class_ratio = [inf,inf,inf]
 total_class_ratio = [0,0,0]
 highest_class_count = [0,0,0]
 lowest_class_count = [inf,inf,inf]
+
+# Contains names of files with min and max pixels for class 1.
+min_file = ["","",""]
+max_file = ["","",""]
 
 for c in all_class_data:
     cls0 = c[0]
@@ -83,15 +88,22 @@ for c in all_class_data:
             lowest_class_ratio[idx] = class_ratio[idx]
         if cls_counts[idx] > highest_class_count[idx]:
             highest_class_count[idx] = cls_counts[idx]
+            max_file[idx] = c[3]
         if cls_counts[idx] < lowest_class_count[idx]:
             lowest_class_count[idx] = cls_counts[idx]
+            min_file[idx] = c[3]
 
 for idx in range(3):
     print("Lowest ratio, class " + str(idx) + ": " + str(lowest_class_ratio[idx]))
     print("Highest ratio, class " + str(idx) + ": " + str(highest_class_ratio[idx]))
     print("Average ratio, class " + str(idx) + ": " + str(total_class_ratio[idx] / float(len(all_class_data))))
     print("Lowest pixel count, class " + str(idx) + ": " + str(lowest_class_count[idx]))
+    print("Lowest pixel ratio, class " + str(idx) + ": " + str(lowest_class_count[idx] / float(160*160)))
+    print("Lowest pixel count, class " + str(idx) +  " is in file: " + min_file[idx])
     print("Highest pixel count, class " + str(idx) + ": " + str(highest_class_count[idx]))
+    print("Highest pixel ratio, class " + str(idx) + ": " + str(highest_class_count[idx] / float(160*160)))
+    print("Highest pixel count, class " + str(idx) +  " is in file: " + max_file[idx])
+    
     
 print("------")
 print(total_class_pixel_count)
