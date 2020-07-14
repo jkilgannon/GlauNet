@@ -71,32 +71,32 @@ def main():
     # Place the fundus TIF in the <path_fundus> directory.
     files = os.listdir(path_fundus)
     files.sort()
+    
+    for annotator in range(1,7):
+        ################################################################
+        # Predict how each annotator would annotate the image, given
+        # the learned model for that annotator.
+        K.clear_session()
+    
+        monitor_type = 'loss'
+        loss = custom_loss
+        
+        in_model_loc = path_model + 'model_' + str(annotator) + '.h5'
+    
+        model = tf.keras.models.load_model(in_model_loc,
+               custom_objects={'soft_loss': soft_loss, 'custom_loss': custom_loss})
 
-    for f in files:
-        if f.lower().endswith('.tif'):
-            img = path_fundus + f
-            test_fundus = load_img(img, target_size=input_size)
-            
-            # https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
-            x = image.img_to_array(test_fundus)
-            x = np.reshape(x, input_size)
-            images = np.reshape(x, (-1, input_size[0], input_size[1], input_size[2]))
-            # end of stackoverflow
-            
-            for annotator in range(1,7):
-                ################################################################
-                # Predict how each annotator would annotate the image, given
-                # the learned model for that annotator.
-                K.clear_session()
-            
-                monitor_type = 'loss'
-                loss = custom_loss
+        for f in files:
+            if f.lower().endswith('.tif'):
+                img = path_fundus + f
+                test_fundus = load_img(img, target_size=input_size)
                 
-                in_model_loc = path_model + 'model_' + str(annotator) + '.h5'
-            
-                model = tf.keras.models.load_model(in_model_loc,
-                       custom_objects={'soft_loss': soft_loss, 'custom_loss': custom_loss})
-               
+                # https://stackoverflow.com/questions/43469281/how-to-predict-input-image-using-trained-model-in-keras
+                x = image.img_to_array(test_fundus)
+                x = np.reshape(x, input_size)
+                images = np.reshape(x, (-1, input_size[0], input_size[1], input_size[2]))
+                # end of stackoverflow
+                           
                 predicted = model.predict(images)
                 predicted_reshape = np.reshape(predicted, preferred_size)
                 
